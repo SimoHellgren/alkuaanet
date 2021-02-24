@@ -67,16 +67,21 @@ def on_callback(message):
 
     elif kind == 'collection':
         songs = sorted(api.get_collection_songs(rid), key=lambda x: x['name'])
-        kb = basic_keyboard(songs, 'song')
-
-        bot.sendMessage(chat_id, f'Songs in collection:', reply_markup=kb)
+        
+        if songs:
+            kb = basic_keyboard(songs, 'song')
+            bot.sendMessage(chat_id, f'Songs in collection:', reply_markup=kb)
+        else:
+            bot.sendMessage(chat_id, f'No songs in collection')
 
     elif kind == 'composer':
         songs = sorted(api.get_composer_songs(rid), key=lambda x: x['name'])
-        kb = basic_keyboard(songs, 'song')
 
-        bot.sendMessage(chat_id, f'Songs by composer:', reply_markup=kb)
-
+        if songs:
+            kb = basic_keyboard(songs, 'song')
+            bot.sendMessage(chat_id, f'Songs by composer:', reply_markup=kb)
+        else:
+            bot.sendMessage(chat_id, f'No songs by composer')
 
 message_loop = MessageLoop(
         bot,
