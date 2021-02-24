@@ -1,0 +1,6 @@
+.venv
+.vscode
+__pycache__
+backend/config.py
+telegram/config.py
+debug_db.py
