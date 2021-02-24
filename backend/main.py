@@ -1,10 +1,9 @@
-from io import BytesIO
-from fastapi import FastAPI, status, HTTPException, Depends
-from fastapi.responses import StreamingResponse
+from fastapi import FastAPI, Depends
 from typing import List
 from sqlalchemy.orm import Session
 from . import crud, models, schemas
 from .database import SessionLocal, engine
+from .routers import songs
 
 models.Base.metadata.create_all(bind=engine)
 
@@ -19,41 +18,11 @@ def get_db():
     finally:
         db.close()
 
+app.include_router(songs.router)
+
 @app.get('/')
 def root():
     return 'hey.'
-
-@app.get('/songs', response_model=List[schemas.Song])
-def read_songs(db: Session = Depends(get_db)):
-    return crud.get_songs(db)
-
-
-@app.post('/songs', response_model=schemas.Song)
-def create_song(song: schemas.SongCreate, db: Session = Depends(get_db)):
-    return crud.create_song(db=db, song=song)
-    
-
-@app.put('/songs/{song_id}', response_model=schemas.Song)
-def update_song(song: schemas.Song, db: Session = Depends(get_db)):
-    return crud.update_song(db, song)
-
-@app.get('/songs/{song_id}', response_model=schemas.Song)
-def read_song(song_id: int, db: Session = Depends(get_db)):
-    db_song = crud.get_song(db, song_id)
-    if not db_song:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail='Song not found')
-
-    return db_song
-
-@app.get('/songs/{song_id}/opus')
-def get_song_opus(song_id: int, db: Session = Depends(get_db)):
-    file_like = crud.get_song_opus(db, song_id)
-    return StreamingResponse(BytesIO(file_like), media_type='audio/ogg')
-
-@app.get('/songs/search/{q}', response_model=List[schemas.Song])
-def search_songs(q: str, db: Session = Depends(get_db)):
-    db_songs = crud.search_song_by_name(db, q)
-    return db_songs
 
 @app.get('/composers', response_model=List[schemas.Composer])
 def read_composers(db: Session = Depends(get_db)):
