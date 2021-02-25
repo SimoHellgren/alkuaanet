@@ -8,7 +8,7 @@ from .. import crud
 router = APIRouter()
 
 @router.get('/collections', response_model=List[schemas.Collection])
-def read_collection(db: Session = Depends(get_db)):
+def read_collections(db: Session = Depends(get_db)):
     return crud.get_collections(db)
 
 @router.get('/collections/{collection_id}', response_model=schemas.Collection)
