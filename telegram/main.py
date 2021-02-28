@@ -21,7 +21,20 @@ def on_chat(message):
 
     command, _, args = text.partition(' ')
 
-    if text.startswith('/collections'):
+    if text == '/start':
+        msg = (
+            'Tervetuloa alkuäänibottiin!\n\n'
+            'Botti hakee biisejä, säveltäjiä ja kokoelmia. Testaa esimerkiksi:\n\n'
+            'hän\n'
+            '/collections\n'
+            '/collections p\n'
+            '/composers\n'
+            '/composers kuu\n'
+        )
+
+        bot.sendMessage(chat_id, msg)
+
+    elif text.startswith('/collections'):
         if args:
             collections = api.search_collections(args)
         else:
