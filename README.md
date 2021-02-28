@@ -9,5 +9,6 @@ You'll need:
   * `token` - Telegram Bot token
   * `apiurl` - the address of the backend
 
+You'll also need `opusenc` in order to create opus-files when posting / putting songs.
 
 Start the backend with `uvicorn backend.main:app`
