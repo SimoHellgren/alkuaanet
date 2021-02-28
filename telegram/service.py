@@ -18,7 +18,7 @@ class SongsAPI(Session):
         return BytesIO(blob)
 
     def search_songs(self, query):
-        return self.get(f'/songs/search/{query}').json()
+        return self.get(f'/songs/search', params={'q': query}).json()
 
     def get_collections(self):
         return self.get('/collections').json()
@@ -27,7 +27,7 @@ class SongsAPI(Session):
         return self.get(f'/collections/{collection_id}/songs').json()
 
     def search_collections(self, q):
-        return self.get(f'/collections/search/{q}').json()
+        return self.get(f'/collections/search', params={'q': q}).json()
 
     def get_composers(self):
         return self.get('/composers').json()
@@ -35,5 +35,5 @@ class SongsAPI(Session):
     def get_composer_songs(self, composer_id):
         return self.get(f'/composers/{composer_id}/songs').json()
 
-    def search_composers(self, query):
-        return self.get(f'/composers/search/{query}').json()
+    def search_composers(self, lastname):
+        return self.get(f'/composers/search', params={'lastname': lastname}).json()
