@@ -14,6 +14,10 @@ router = APIRouter(
 def read_composers(db: Session = Depends(get_db)):
     return crud.get_composers(db)
 
+@router.get('/search', response_model=List[schemas.Composer])
+def search_composers(lastname: str, db: Session = Depends(get_db)):
+    return crud.search_composers_by_lastname(db, lastname)
+
 @router.post('/', response_model=schemas.Composer)
 def create_composer(composer: schemas.ComposerCreate, db: Session = Depends(get_db)):
     return crud.create_composer(db, composer)
@@ -29,7 +33,3 @@ def read_composer_songs(composer_id: int, db: Session = Depends(get_db)):
 @router.put('/{composer_id}/songs/{song_id}')
 def add_song_to_composer(composer_id: int, song_id: int, db: Session = Depends(get_db)):
     return crud.add_song_to_composer(db, composer_id, song_id)
-
-@router.get('/search/{lastname}', response_model=List[schemas.Composer])
-def search_composers(lastname: str, db: Session = Depends(get_db)):
-    return crud.search_composers_by_lastname(db, lastname)
