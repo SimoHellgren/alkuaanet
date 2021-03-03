@@ -10,7 +10,7 @@ from .config import token, apiurl
 log = logging.getLogger(__name__)
 log.setLevel(logging.INFO)
 
-log_formatter = logging.Formatter('%(asctime)s:%(levelname)s:%(name)s:%(message)s')
+log_formatter = logging.Formatter('[%(asctime)s] {%(name)s} %(levelname)s - %(message)s')
 log_formatter.converter = gmtime
 
 # stream_handler = logging.StreamHandler()
@@ -92,7 +92,7 @@ def on_callback(message):
     if kind == 'song':
         song = api.get_song(rid)
         
-        log.info(f"{{ kind={kind!r} id={song['id']!r} name={song['name']!r} chat={chat_id!r} }}")
+        log.info(f"kind={kind!r} id={song['id']!r} name={song['name']!r} chat={chat_id!r}")
         opus = api.get_song_opus(rid)
         bot.sendMessage(chat_id, song_to_message(song))
         bot.sendVoice(chat_id, opus)
