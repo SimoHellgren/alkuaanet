@@ -1,7 +1,7 @@
 .venv
 .vscode
 __pycache__
-.*pyc
+*.pyc
 backend/config.py
 telegram/config.py
 debug_db.py
