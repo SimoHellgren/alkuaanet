@@ -1,0 +1,34 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  simple:
+    format: "[%(asctime)s] {%(name)s} %(levelname)s - %(message)s"
+
+  uvicorn:
+    (): uvicorn.logging.DefaultFormatter
+    fmt: "%(levelprefix)s %(message)s"
+    use_colors: True
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: uvicorn
+    stream: ext://sys.stdout
+
+  info_file_handler:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: backend/access.log
+    encoding: utf-8
+
+loggers:
+  uvicorn.access:
+    level: INFO
+    handlers: [info_file_handler]
+
+root:
+  level: INFO
+  handlers: [console]
