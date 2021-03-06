@@ -5,7 +5,9 @@ async-timeout==3.0.1
 attrs==20.3.0
 certifi==2020.12.5
 chardet==3.0.4
+click==7.1.2
 fastapi==0.63.0
+h11==0.12.0
 idna==2.10
 multidict==5.1.0
 numpy==1.20.1
@@ -17,4 +19,5 @@ starlette==0.13.6
 telepot==12.7
 typing-extensions==3.7.4.3
 urllib3==1.26.2
+uvicorn==0.13.4
 yarl==1.6.3
