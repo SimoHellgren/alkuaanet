@@ -2,7 +2,7 @@
 .vscode
 __pycache__
 *.pyc
-backend/config.py
+backend/app/config.py
 telegram/config.py
 debug_db.py
 *.log
