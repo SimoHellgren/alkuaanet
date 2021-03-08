@@ -22,7 +22,7 @@ def search_songs(q: str, db: Session = Depends(get_db)):
     db_songs = crud.search_song_by_name(db, q)
     return db_songs
 
-@router.post('/', response_model=schemas.Song)
+@router.post('/', response_model=schemas.Song, status_code=status.HTTP_201_CREATED)
 def create_song(song: schemas.SongCreate, db: Session = Depends(get_db)):
     return crud.create_song(db=db, song=song)
 
