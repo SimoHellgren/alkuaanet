@@ -1,3 +1,4 @@
+from datetime import date, datetime
 from sqlalchemy.orm import Session
 from . import models, schemas
 from .synth import make_opus_blob
@@ -16,16 +17,26 @@ def search_song_by_name(db: Session, q: str):
     return db.query(models.Song).filter(models.Song.name.ilike(f'{q}%')).all()
 
 def create_song(db: Session, song: schemas.SongCreate):
+    # now instead of utcnow seems to store correct time in db.
+    # Should verify why. Remember to also check PUT songs
+    time_now = datetime.now()
     opus_blob = make_opus_blob(song.tones.split('-'))
-    db_song = models.Song(name=song.name, tones=song.tones, opus=opus_blob)
+    db_song = models.Song(
+        name=song.name,
+        tones=song.tones,
+        opus=opus_blob,
+        created_at=time_now,
+        updated_at=time_now
+    )
     db.add(db_song)
     db.commit()
     db.refresh(db_song)
     return db_song
 
-def update_song(db: Session, song: schemas.SongUpdate):   
+def update_song(db: Session, song: schemas.SongUpdate):  
     db_song = db.query(models.Song).get(song.id)
-    
+    db_song.updated_at = datetime.now() 
+
     if db_song.tones != song.tones:
         db_song.opus =  make_opus_blob(song.tones.split('-'))
 
