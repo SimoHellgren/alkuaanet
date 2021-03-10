@@ -1,4 +1,5 @@
-from sqlalchemy import Table, Column, Integer, String, ForeignKey, LargeBinary
+from datetime import time
+from sqlalchemy import Table, Column, Integer, String, ForeignKey, LargeBinary, TIMESTAMP
 from sqlalchemy.orm import relationship
 from .database import Base
 
@@ -30,6 +31,8 @@ class Song(Base):
     name = Column(String)
     tones = Column(String)
     opus = Column(LargeBinary)
+    created_at = Column(TIMESTAMP(timezone=True))
+    updated_at = Column(TIMESTAMP(timezone=True))
 
     composers = relationship('Composer', secondary=composer_songs, back_populates='songs')
 
