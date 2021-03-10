@@ -1,5 +1,6 @@
 from pydantic import BaseModel  
 from typing import Optional
+from datetime import datetime
 
 
 class ComposerBase(BaseModel):
@@ -23,11 +24,14 @@ class SongCreate(SongBase):
 
 class SongUpdate(SongBase):
     id: int
+    name: str
     tones: str
 
 class Song(SongBase):
     id: int
     tones: Optional[str]
+    created_at: datetime
+    updated_at: datetime
 
     class Config:
         orm_mode = True
