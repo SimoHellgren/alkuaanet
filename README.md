@@ -3,7 +3,7 @@
 Starting notes of songs. FastAPI backend with SQLAlchemy and a Telegram bot.
 
 You'll need:
-* a `config.py` in the [backend/main](backend/main) folder defining:
+* a `config.py` in the [backend/app](backend/app) folder defining:
   * `DB_URI` - a URI to connect to the database (anything compatible with SQLAlchemy)
 * a `config.py` in the [telegram](telegram) folder defining:
   * `token` - a Telegram Bot token
