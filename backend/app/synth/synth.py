@@ -4,7 +4,7 @@ import numpy as np
 from .notes import note_to_frequency
 
 take = lambda n, seq: islice(seq, 0, n)
-nwise = lambda seq, k=2: zip(*(islice(it, i, None) for i, it in enumerate(tee(seq, k))))
+nwise = lambda seq, n=2: zip(*(islice(it, i, None) for i, it in enumerate(tee(seq, n))))
 
 def sinewave(freq, amp):
     '''return a function that produces a sinewave with a given frequency and amplitude'''
