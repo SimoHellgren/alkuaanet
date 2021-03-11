@@ -82,7 +82,9 @@ def on_chat(message):
             bot.sendMessage(chat_id, f'No results for {text}')
 
 def song_to_message(song):
-    return '\n'.join(f'{k}: {v}' for k,v in song.items() if k not in ('id', ))
+    keys = 'name', 'tones'
+
+    return '\n'.join(f'{k}: {song.get(k)}' for k in keys)
 
 def on_callback(message):
     query_id, chat_id, callback = telepot.glance(message, flavor='callback_query')
