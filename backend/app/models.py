@@ -1,4 +1,3 @@
-from datetime import time
 from sqlalchemy import Table, Column, Integer, String, ForeignKey, LargeBinary, TIMESTAMP
 from sqlalchemy.orm import relationship
 from .database import Base
