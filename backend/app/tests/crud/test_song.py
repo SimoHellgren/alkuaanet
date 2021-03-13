@@ -48,6 +48,15 @@ def test_update_song(test_db_session):
     assert new_song.created_at < new_song.updated_at
 
 
+def test_get_all_songs(test_db_session):
+    db_song1 = crud.create_song(test_db_session, song1)
+    db_song2 = crud.create_song(test_db_session, song2)
+
+    result = crud.get_songs(test_db_session)
+
+    assert db_song1 in result
+    assert db_song2 in result
+
 def test_search_songs(test_db_session):
     db_song1 = crud.create_song(test_db_session, song1)
     db_song2 = crud.create_song(test_db_session, song2)
