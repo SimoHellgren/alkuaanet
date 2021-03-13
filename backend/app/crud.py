@@ -8,7 +8,7 @@ def get_songs(db: Session):
     return db.query(models.Song).all()
 
 def get_song(db: Session, song_id: int):
-    return db.query(models.Song).filter(models.Song.id == song_id).first()
+    return db.query(models.Song).get(song_id)
 
 def search_song_by_name(db: Session, q: str):
     return db.query(models.Song).filter(models.Song.name.ilike(f'{q}%')).all()
@@ -49,7 +49,7 @@ def get_composers(db: Session):
     return db.query(models.Composer).all()
 
 def get_composer(db: Session, composer_id: int):
-    return db.query(models.Composer).filter(models.Composer.id == composer_id).first()
+    return db.query(models.Composer).get(composer_id)
 
 def create_composer(db: Session, composer: schemas.ComposerCreate):
     db_composer = models.Composer(firstname=composer.firstname, lastname=composer.lastname)
