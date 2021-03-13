@@ -46,3 +46,18 @@ def test_update_song(test_db_session):
     assert new_song.opus != old_opus
     assert song.created_at == new_song.created_at
     assert new_song.created_at < new_song.updated_at
+
+
+def test_search_songs(test_db_session):
+    db_song1 = crud.create_song(test_db_session, song1)
+    db_song2 = crud.create_song(test_db_session, song2)
+
+    search_result = crud.search_song_by_name(test_db_session, 'te')
+
+    assert db_song1 in search_result
+    assert db_song2 not in search_result
+
+    # ensure case insensitivity
+    search_result = crud.search_song_by_name(test_db_session, 'TEST')
+    assert db_song1 in search_result
+    assert db_song2 not in search_result
