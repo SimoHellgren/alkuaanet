@@ -25,7 +25,7 @@ def samples_to_wav_bytes(samples, sample_rate=44100):
 def wav_bytes_to_opus(wav_bytes):
     #call opusenc through wsl if on windows
     command = 'wsl opusenc - -' if sys.platform == 'win32' else 'opusenc - -'
-    result = subprocess.run(command, capture_output=True, input=wav_bytes)
+    result = subprocess.run(command.split(), capture_output=True, input=wav_bytes)
     return result.stdout
 
 def samples_to_opus(samples, sample_rate=44100):
