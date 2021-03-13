@@ -40,5 +40,5 @@ def read_song(song_id: int, db: Session = Depends(get_db)):
 
 @router.get('/{song_id}/opus')
 def get_song_opus(song_id: int, db: Session = Depends(get_db)):
-    file_like = crud.get_song_opus(db, song_id)
+    file_like = crud.get_song(db, song_id).opus
     return StreamingResponse(BytesIO(file_like), media_type='audio/ogg')

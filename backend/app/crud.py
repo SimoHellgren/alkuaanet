@@ -10,9 +10,6 @@ def get_songs(db: Session):
 def get_song(db: Session, song_id: int):
     return db.query(models.Song).filter(models.Song.id == song_id).first()
 
-def get_song_opus(db: Session, song_id: int):
-    return db.query(models.Song).get(song_id).opus
-
 def search_song_by_name(db: Session, q: str):
     return db.query(models.Song).filter(models.Song.name.ilike(f'{q}%')).all()
 
