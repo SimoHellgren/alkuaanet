@@ -1,14 +1,15 @@
 from backend.app import crud, schemas
 
+song1 = schemas.SongCreate(name='Test song', tones='A4')
+song2 = schemas.SongCreate(name='Another test song', tones='A3')
+
 def test_create_song(test_db_session):
-    name = 'Test song'
-    tones = 'A4'
-    song_in = schemas.SongCreate(name=name, tones=tones)
+    song_in = song1
 
     song = crud.create_song(test_db_session, song_in)
 
-    assert song.name == name
-    assert song.tones == tones
+    assert song.name == song_in.name
+    assert song.tones == song_in.tones
     assert song.id
     assert song.opus
     assert song.created_at
@@ -17,9 +18,7 @@ def test_create_song(test_db_session):
 
 
 def test_get_song(test_db_session):
-    name = 'Test song'
-    tones = 'A4'
-    song_in = schemas.SongCreate(name=name, tones=tones)
+    song_in = song1
 
     song = crud.create_song(test_db_session, song_in)
 
@@ -29,9 +28,7 @@ def test_get_song(test_db_session):
 
 
 def test_update_song(test_db_session):
-    name = 'Test song'
-    tones = 'A4'
-    song_in = schemas.SongCreate(name=name, tones=tones)
+    song_in = song1
 
     song = crud.create_song(test_db_session, song_in)
     old_opus = song.opus
