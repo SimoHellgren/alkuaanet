@@ -4,7 +4,8 @@ from backend.app import crud, schemas
 composer1 = schemas.ComposerCreate(lastname='Säveltäjä', firstname='Sanni')
 composer2 = schemas.ComposerCreate(lastname='Komposiittori', firstname='Keijo')
 
-song1 = schemas.SongCreate(name='Testsong', tones='C4-G3-E3-C3')
+song1 = schemas.SongCreate(name='Testsong 1', tones='C4-G3-E3-C3')
+song2 = schemas.SongCreate(name='Testsong 2', tones='C4-G3-E3-C3')
 
 def test_create_composer(test_db_session):
     composer_in = composer1
@@ -30,13 +31,15 @@ def test_add_song_to_composer(test_db_session):
     # This tests two things: adding songs and getting a composer's songs.
     # Should probably be separated somehow 
     composer = crud.create_composer(test_db_session, composer1)
-    song = crud.create_song(test_db_session, song1)
+    db_song1 = crud.create_song(test_db_session, song1)
+    db_song2 = crud.create_song(test_db_session, song2)
 
-    crud.add_song_to_composer(test_db_session, composer.id, song.id)
+    crud.add_song_to_composer(test_db_session, composer.id, db_song1.id)
 
     composer_songs = crud.get_songs_by_composer(test_db_session, composer.id)
 
-    assert song in composer_songs
+    assert db_song1 in composer_songs
+    assert db_song2 not in composer_songs
 
 def test_add_song_to_composer2(test_db_session):
     # Ensure that adding a song to a composer does not add it to other composers
