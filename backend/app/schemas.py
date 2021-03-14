@@ -39,6 +39,9 @@ class Song(SongBase):
 class CollectionBase(BaseModel):
     name: str
 
+class CollectionCreate(CollectionBase):
+    pass
+
 class Collection(CollectionBase):
     id: int
 

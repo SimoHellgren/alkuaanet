@@ -78,6 +78,14 @@ def get_collections(db: Session):
 def get_collection(db: Session, collection_id: int):
     return db.query(models.Collection).get(collection_id)
 
+def create_collection(db: Session, collection: schemas.CollectionCreate):
+    db_collection = models.Collection(name=collection.name)
+    db.add(db_collection)
+    db.commit()
+    db.refresh(db_collection)
+
+    return db_collection
+
 def get_collection_songs(db: Session, collection_id: int):
     return db.query(models.Collection).get(collection_id).songs
 
