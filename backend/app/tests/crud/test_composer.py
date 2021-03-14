@@ -38,6 +38,21 @@ def test_add_song_to_composer(test_db_session):
 
     assert song in composer_songs
 
+def test_add_song_to_composer2(test_db_session):
+    # Ensure that adding a song to a composer does not add it to other composers
+    # Should probably be separated somehow 
+    db_comp1 = crud.create_composer(test_db_session, composer1)
+    db_comp2 = crud.create_composer(test_db_session, composer2)
+    song = crud.create_song(test_db_session, song1)
+
+    crud.add_song_to_composer(test_db_session, db_comp1.id, song.id)
+
+    composer_songs1 = crud.get_songs_by_composer(test_db_session, db_comp1.id)
+    composer_songs2 = crud.get_songs_by_composer(test_db_session, db_comp2.id)
+
+    assert song in composer_songs1
+    assert song not in composer_songs2
+
 def test_search_composers(test_db_session):
     db_composer1 = crud.create_composer(test_db_session, composer1)
     db_composer2 = crud.create_composer(test_db_session, composer2)
