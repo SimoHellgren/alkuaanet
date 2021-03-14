@@ -1,8 +1,8 @@
 from backend.app import crud, schemas
 
 
-composer1 = schemas.ComposerCreate(lastname='Henkilö', firstname='Testi 1')
-composer2 = schemas.ComposerCreate(lastname='Henkilö', firstname='Testi 2')
+composer1 = schemas.ComposerCreate(lastname='Säveltäjä', firstname='Sanni')
+composer2 = schemas.ComposerCreate(lastname='Komposiittori', firstname='Keijo')
 
 song1 = schemas.SongCreate(name='Testsong', tones='C4-G3-E3-C3')
 
@@ -27,6 +27,8 @@ def test_get_composer(test_db_session):
 
 
 def test_add_song_to_composer(test_db_session):
+    # This tests two things: adding songs and getting a composer's songs.
+    # Should probably be separated somehow 
     composer = crud.create_composer(test_db_session, composer1)
     song = crud.create_song(test_db_session, song1)
 
@@ -35,3 +37,13 @@ def test_add_song_to_composer(test_db_session):
     composer_songs = crud.get_songs_by_composer(test_db_session, composer.id)
 
     assert song in composer_songs
+
+def test_search_composers(test_db_session):
+    db_composer1 = crud.create_composer(test_db_session, composer1)
+    db_composer2 = crud.create_composer(test_db_session, composer2)
+
+    # ensure case insensitivity
+    composers = crud.search_composers_by_lastname(test_db_session, 'sÄVel')
+
+    assert db_composer1 in composers
+    assert db_composer2 not in composers
