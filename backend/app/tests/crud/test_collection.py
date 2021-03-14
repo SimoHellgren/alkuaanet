@@ -13,51 +13,43 @@ def test_create_collection(test_db_session):
     assert db_collection.name == collection1.name
 
 
-# def test_get_composer(test_db_session):
-#     composer_in = composer1
+def test_get_collection(test_db_session):
+    db_collection = crud.create_collection(test_db_session, collection1)
 
-#     composer = crud.create_composer(test_db_session, composer_in)
+    get_collection = crud.get_collection(test_db_session, db_collection.id)
 
-#     get_composer = crud.get_composer(test_db_session, composer.id)
+    assert db_collection == get_collection
 
-#     assert composer == get_composer
+def test_add_song_to_collection(test_db_session):
+    # this tests for quite many things. Worth considering separate tests     
+    db_coll1 = crud.create_collection(test_db_session, collection1)
+    db_coll2 = crud.create_collection(test_db_session, collection2)
+    
+    db_song1 = crud.create_song(test_db_session, song1)
+    db_song2 = crud.create_song(test_db_session, song2)
 
+    crud.add_song_to_collection(test_db_session, db_coll1.id, db_song1.id)
 
-# def test_add_song_to_composer(test_db_session):
-#     # This tests two things: adding songs and getting a composer's songs.
-#     # Should probably be separated somehow 
-#     composer = crud.create_composer(test_db_session, composer1)
-#     db_song1 = crud.create_song(test_db_session, song1)
-#     db_song2 = crud.create_song(test_db_session, song2)
+    collection_songs1 = crud.get_collection_songs(test_db_session, db_coll1.id)
+    collection_songs2 = crud.get_collection_songs(test_db_session, db_coll2.id)
 
-#     crud.add_song_to_composer(test_db_session, composer.id, db_song1.id)
+    assert db_song1 in collection_songs1
+    assert db_song1 not in collection_songs2
+    assert db_song2 not in collection_songs1
+    assert db_song2 not in collection_songs2
+    
 
-#     composer_songs = crud.get_songs_by_composer(test_db_session, composer.id)
+def test_search_collections(test_db_session):
+    db_collection1 = crud.create_collection(test_db_session, collection1)
+    db_collection2 = crud.create_collection(test_db_session, collection2)
 
-#     assert db_song1 in composer_songs
-#     assert db_song2 not in composer_songs
+    # ensure case insensitivity
+    search_result1 = crud.search_collections_by_name(test_db_session, 'h')
 
-# def test_add_song_to_composer2(test_db_session):
-#     # Ensure that adding a song to a composer does not add it to other composers
-#     # Should probably be separated somehow 
-#     db_comp1 = crud.create_composer(test_db_session, composer1)
-#     db_comp2 = crud.create_composer(test_db_session, composer2)
-#     song = crud.create_song(test_db_session, song1)
+    assert db_collection1 in search_result1
+    assert db_collection2 in search_result1
 
-#     crud.add_song_to_composer(test_db_session, db_comp1.id, song.id)
+    search_result2 = crud.search_collections_by_name(test_db_session, 'hy')
 
-#     composer_songs1 = crud.get_songs_by_composer(test_db_session, db_comp1.id)
-#     composer_songs2 = crud.get_songs_by_composer(test_db_session, db_comp2.id)
-
-#     assert song in composer_songs1
-#     assert song not in composer_songs2
-
-# def test_search_composers(test_db_session):
-#     db_composer1 = crud.create_composer(test_db_session, composer1)
-#     db_composer2 = crud.create_composer(test_db_session, composer2)
-
-#     # ensure case insensitivity
-#     composers = crud.search_composers_by_lastname(test_db_session, 'sÄVel')
-
-#     assert db_composer1 in composers
-#     assert db_composer2 not in composers
+    assert db_collection1 in search_result2
+    assert db_collection2 not in search_result2
