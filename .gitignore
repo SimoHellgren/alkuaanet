@@ -4,5 +4,6 @@ __pycache__
 *.pyc
 backend/app/config.py
 telegram/config.py
+frontend/src/config.json
 debug_db.py
 *.log

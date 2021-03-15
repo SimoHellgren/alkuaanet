@@ -1,25 +1,25 @@
-import logo from './logo.svg';
+import { useState, useEffect } from 'react'
+import SongList from './components/SongList'
+import songService from './services/songs'
+
 import './App.css';
 
+const sortById = (a,b) => {
+  if (a.id > b.id) return 1
+  if (a.id === b.id) return 0
+  return -1
+}
+
 function App() {
+  const [songs, setSongs] = useState([])
+
+  useEffect( () => {
+    songService.getAll().then(s => setSongs(s.sort(sortById)))
+  }, [])
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+    <SongList songs={songs}/>
+  )
 }
 
 export default App;
