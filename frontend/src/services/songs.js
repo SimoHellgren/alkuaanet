@@ -8,5 +8,9 @@ const getAll = () => {
     return request.then(response => response.data)
 }
 
+const create = async newSong => {
+    const response = await axios.post(path, newSong)
+    return response.data
+}
 
-export default { getAll }
+export default { getAll, create }
