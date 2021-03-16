@@ -54,10 +54,19 @@ function App() {
     }
   }
 
+  const handleUpdateSong = async (id, songdata) => {
+    try {
+      const response = await songService.update(id, songdata)
+      setSongs(songs.map(s => s.id === id ? response : s))
+    } catch (error){
+      console.log(error)
+    }
+  }
+
 
   return [
     <SongForm createSong={handleCreateSong}/>,
-    <SongList songs={songs}/>
+    <SongList songs={songs} songUpdateFunc={handleUpdateSong}/>
   ]
 }
 

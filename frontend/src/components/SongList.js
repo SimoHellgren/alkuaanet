@@ -1,7 +1,8 @@
 import React, { useState } from 'react'
 import Song from './Song'
 
-const SongList = ({songs}) => {
+
+const SongList = ({songs, songUpdateFunc}) => {
     const [filter, setFilter] = useState("")
    
     return [
@@ -9,7 +10,7 @@ const SongList = ({songs}) => {
       <form>
         <input id='songsearch' value={filter} onChange={({target}) => setFilter(target.value)}/>
       </form>,
-      <div>{songs.filter(s => s.name.toLowerCase().startsWith(filter.toLowerCase())).map(s => <Song key={s.id} song={s}/>)}</div>
+      <div>{songs.filter(s => s.name.toLowerCase().startsWith(filter.toLowerCase())).map(s => <Song key={s.id} song={s} updateSong={songUpdateFunc}/>)}</div>
     ]
   }
 
