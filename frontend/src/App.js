@@ -43,7 +43,7 @@ function App() {
   }, [])
   
   useEffect( () => {
-    composerService.getAll().then(s => setComposers(s.sort(sortByLastname)))
+    composerService.getAll().then(c => setComposers(c.sort(sortByLastname)))
   }, [])
   
   useEffect( () => {
