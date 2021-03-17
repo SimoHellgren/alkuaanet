@@ -1,13 +1,12 @@
 import { useState, useEffect } from 'react'
 import {
-  BrowserRouter as Router,
-  Switch, Route, Link, Redirect
+  Switch, Route, Link, Redirect, useRouteMatch
 } from 'react-router-dom'
 
 import SongForm from './components/SongForm'
 import SongList from './components/SongList'
 import ComposerList from './components/ComposerList'
-import CollectionList from './components/CollectionList'
+import CollectionList, { CollectionView } from './components/CollectionList'
 import songService from './services/songs'
 import composerService from './services/composers'
 import collectionService from './services/collections'
@@ -69,17 +68,21 @@ function App() {
     }
   }
 
+  const collectionMatch = useRouteMatch('/collections/:id')
+  const collectionId = collectionMatch 
+    ? Number(collectionMatch.params.id) 
+    : null
+
   const padding = {
     padding: 5
   }
 
   return [
-    <Router>
       <div>
         <Link style={padding} to='/songs'>songs</Link>
         <Link style={padding} to='/composers'>composers</Link>
         <Link style={padding} to='/collections'>collections</Link>
-      </div>
+      </div>,
 
       <Switch>
         <Route path='/songs'>
@@ -88,6 +91,10 @@ function App() {
 
         <Route path='/composers'>
           <ComposerList composers={composers}/>
+        </Route>
+
+        <Route path='/collections/:id'>
+          <CollectionView id={collectionId}/>
         </Route>
 
         <Route path='/collections'>
@@ -99,7 +106,6 @@ function App() {
         </Route>
 
       </Switch>
-    </Router>,
   ]
 }
 

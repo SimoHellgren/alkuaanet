@@ -8,6 +8,16 @@ const getAll = () => {
     return request.then(response => response.data)
 }
 
+const getById = async (id) => {
+    const request = axios.get(`${path}${id}`)
+    return request.then(response => response.data)
+}
+
+const getSongs = async (id) => {
+    const request = axios.get(`${path}${id}/songs`)
+    return request.then(response => response.data)
+}
+
 const create = async newCollection => {
     const response = await axios.post(path, newCollection)
     return response.data
@@ -19,4 +29,4 @@ const update = async (id, updatedCollection) => {
 }
 
 // eslint-disable-next-line import/no-anonymous-default-export
-export default { getAll, create, update }
+export default { getAll, create, update, getSongs, getById }
