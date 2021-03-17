@@ -1,4 +1,9 @@
 import { useState, useEffect } from 'react'
+import {
+  BrowserRouter as Router,
+  Switch, Route, Link, Redirect
+} from 'react-router-dom'
+
 import SongForm from './components/SongForm'
 import SongList from './components/SongList'
 import ComposerList from './components/ComposerList'
@@ -57,10 +62,32 @@ function App() {
     }
   }
 
+  const padding = {
+    padding: 5
+  }
 
   return [
-    <SongsView songs={songs} handleCreateSong={handleCreateSong} handleUpdateSong={handleUpdateSong}/>,
-    <ComposerList composers={composers}/>
+    <Router>
+      <div>
+        <Link style={padding} to='/songs'>songs</Link>
+        <Link style={padding} to='/composers'>composers</Link>
+      </div>
+
+      <Switch>
+        <Route path='/songs'>
+          <SongsView songs={songs} handleCreateSong={handleCreateSong} handleUpdateSong={handleUpdateSong}/>
+        </Route>
+
+        <Route path='/composers'>
+          <ComposerList composers={composers}/>
+        </Route>
+
+        <Route path='/'>
+          <Redirect to='/songs'/>
+        </Route>
+
+      </Switch>
+    </Router>,
   ]
 }
 
