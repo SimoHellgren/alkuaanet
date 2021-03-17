@@ -7,8 +7,10 @@ import {
 import SongForm from './components/SongForm'
 import SongList from './components/SongList'
 import ComposerList from './components/ComposerList'
+import CollectionList from './components/CollectionList'
 import songService from './services/songs'
 import composerService from './services/composers'
+import collectionService from './services/collections'
 
 import './App.css';
 
@@ -34,6 +36,7 @@ const SongsView = ({songs, handleCreateSong, handleUpdateSong}) => {
 function App() {
   const [songs, setSongs] = useState([])
   const [composers, setComposers] = useState([])
+  const [collections, setCollections] = useState([])
 
   useEffect( () => {
     songService.getAll().then(s => setSongs(s.sort(sortById)))
@@ -41,6 +44,10 @@ function App() {
   
   useEffect( () => {
     composerService.getAll().then(s => setComposers(s.sort(sortByLastname)))
+  }, [])
+  
+  useEffect( () => {
+    collectionService.getAll().then(c => setCollections(c.sort(sortById)))
   }, [])
 
   const handleCreateSong = async (song) => {
@@ -71,6 +78,7 @@ function App() {
       <div>
         <Link style={padding} to='/songs'>songs</Link>
         <Link style={padding} to='/composers'>composers</Link>
+        <Link style={padding} to='/collections'>collections</Link>
       </div>
 
       <Switch>
@@ -80,6 +88,10 @@ function App() {
 
         <Route path='/composers'>
           <ComposerList composers={composers}/>
+        </Route>
+
+        <Route path='/collections'>
+          <CollectionList collections={collections}/>
         </Route>
 
         <Route path='/'>
