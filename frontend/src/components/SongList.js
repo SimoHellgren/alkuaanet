@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 
 
 const SongList = ({songs}) => {
-    const filter = useFormField('text', '')
+    const { reset: _, ...filter} = useFormField('text', '')
 
     const showSongs = songs.filter(
       s => s.name.toLowerCase().startsWith(filter.value.toLowerCase())

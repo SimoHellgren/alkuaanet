@@ -2,8 +2,8 @@ import React from 'react'
 import { useFormField } from '../hooks'
 
 const Song = ({song: {id, name, tones}, updateSong}) => {
-  const newName = useFormField('text', name)
-  const newTones = useFormField('text', tones)
+  const { reset: _1, ...newName} = useFormField('text', name)
+  const { reset: _2, ...newTones} = useFormField('text', tones)
 
   const handleUpdate = (event) => {
     event.preventDefault()

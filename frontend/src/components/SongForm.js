@@ -2,8 +2,8 @@ import React from 'react'
 import { useFormField } from '../hooks'
 
 const SongForm = ({ createSong }) => {
-    const name = useFormField('text', '')
-    const tones = useFormField('text', '')
+    const { reset: resetName, ...name} = useFormField('text', '')
+    const { reset: resetTones, ...tones} = useFormField('text', '')
   
     const addSong = (event) => {
       event.preventDefault()
@@ -15,8 +15,8 @@ const SongForm = ({ createSong }) => {
         }
       )
 
-      name.reset()
-      tones.reset()
+      resetName()
+      resetTones()
         
     }
     
