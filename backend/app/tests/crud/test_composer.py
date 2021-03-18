@@ -56,6 +56,19 @@ def test_add_song_to_composer2(test_db_session):
     assert song in composer_songs1
     assert song not in composer_songs2
 
+def test_add_song_many_times(test_db_session):
+    # Adding song to composer should be idempotent
+    db_comp = crud.create_composer(test_db_session, composer1)
+    song = crud.create_song(test_db_session, song1)
+
+    crud.add_song_to_composer(test_db_session, db_comp.id, song.id)
+    crud.add_song_to_composer(test_db_session, db_comp.id, song.id)
+
+    composer_songs = crud.get_songs_by_composer(test_db_session, db_comp.id)
+
+    assert song in composer_songs
+    assert len(composer_songs) == 1
+
 def test_search_composers(test_db_session):
     db_composer1 = crud.create_composer(test_db_session, composer1)
     db_composer2 = crud.create_composer(test_db_session, composer2)

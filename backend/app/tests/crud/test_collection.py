@@ -38,6 +38,18 @@ def test_add_song_to_collection(test_db_session):
     assert db_song2 not in collection_songs1
     assert db_song2 not in collection_songs2
     
+def test_add_song_many_times(test_db_session):
+    # adding song to collection should be idempotent
+    db_coll = crud.create_collection(test_db_session, collection1)
+    db_song = crud.create_song(test_db_session, song1)
+
+    crud.add_song_to_collection(test_db_session, db_coll.id, db_song.id)
+    crud.add_song_to_collection(test_db_session, db_coll.id, db_song.id)
+
+    collection_songs = crud.get_collection_songs(test_db_session, db_coll.id)
+
+    assert db_song in collection_songs
+    assert len(collection_songs) == 1
 
 def test_search_collections(test_db_session):
     db_collection1 = crud.create_collection(test_db_session, collection1)
