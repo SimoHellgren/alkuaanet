@@ -3,6 +3,7 @@ import {
   Switch, Route, Link, Redirect, useRouteMatch
 } from 'react-router-dom'
 
+import Song from './components/Song'
 import SongForm from './components/SongForm'
 import SongList from './components/SongList'
 import ComposerList from './components/ComposerList'
@@ -25,10 +26,10 @@ const sortByLastname = (a,b) => {
   return -1
 }
 
-const SongsView = ({songs, handleCreateSong, handleUpdateSong}) => {
+const SongsView = ({songs, handleCreateSong}) => {
   return [
     <SongForm createSong={handleCreateSong}/>,
-    <SongList songs={songs} songUpdateFunc={handleUpdateSong}/>
+    <SongList songs={songs}/>
   ]
 }
 
@@ -73,6 +74,11 @@ function App() {
     ? Number(collectionMatch.params.id) 
     : null
 
+  const songMatch = useRouteMatch('/songs/:id')
+  const song = songMatch
+    ? songs.find(s => s.id === Number(songMatch.params.id))
+    : null
+
   const padding = {
     padding: 5
   }
@@ -85,8 +91,12 @@ function App() {
       </div>,
 
       <Switch>
+        <Route path='/songs/:id'>
+          <Song song={song} updateSong={handleUpdateSong}/>
+        </Route>
+
         <Route path='/songs'>
-          <SongsView songs={songs} handleCreateSong={handleCreateSong} handleUpdateSong={handleUpdateSong}/>
+          <SongsView songs={songs} handleCreateSong={handleCreateSong}/>
         </Route>
 
         <Route path='/composers'>

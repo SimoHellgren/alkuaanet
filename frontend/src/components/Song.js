@@ -4,10 +4,6 @@ const Song = ({song: {id, name, tones}, updateSong}) => {
   const [newName, setNewName] = useState(name)
   const [newTones, setNewTones] = useState(tones)
 
-  const [visible, setVisible] = useState(false)
-
-  const toggleVisible = () => setVisible(!visible)
-
   const handleUpdate = (event) => {
     event.preventDefault()
 
@@ -19,12 +15,11 @@ const Song = ({song: {id, name, tones}, updateSong}) => {
 
     updateSong(id, updatedSong)
 
-    setVisible(false)
   }
 
   return [
-  <div onClick={toggleVisible}>[{id}] {name} ({tones}) </div>,
-  <div style={{display: visible ? '' : 'none'}}>
+  <div>[{id}] {name} ({tones}) </div>,
+  <div>
     <form onSubmit={handleUpdate}>
       <div>edit name: <input name='newname' value={newName} onChange={({target}) => setNewName(target.value)}/></div>
       <div>edit tones: <input name='newtones' value={newTones} onChange={({target}) => setNewTones(target.value)}/></div>

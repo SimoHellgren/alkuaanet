@@ -1,8 +1,8 @@
 import React, { useState } from 'react'
-import Song from './Song'
+import { Link } from 'react-router-dom'
 
 
-const SongList = ({songs, songUpdateFunc}) => {
+const SongList = ({songs}) => {
     const [filter, setFilter] = useState("")
    
     return [
@@ -10,7 +10,8 @@ const SongList = ({songs, songUpdateFunc}) => {
       <form>
         <input id='songsearch' value={filter} onChange={({target}) => setFilter(target.value)}/>
       </form>,
-      <div>{songs.filter(s => s.name.toLowerCase().startsWith(filter.toLowerCase())).map(s => <Song key={s.id} song={s} updateSong={songUpdateFunc}/>)}</div>
+      <div>{songs.filter(s => s.name.toLowerCase().startsWith(filter.toLowerCase())).map(
+        s => <div><Link to={`/songs/${s.id}`}>[{s.id}] {s.name} ({s.tones})</Link></div>)}</div>
     ]
   }
 
