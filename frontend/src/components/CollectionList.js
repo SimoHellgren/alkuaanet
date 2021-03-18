@@ -9,20 +9,15 @@ const Collection = ({collection: {id, name}}) => {
     ]
 }
 
-export const CollectionView = ({ id }) => {
-    const [collection, setCollection] = useState({})
+export const CollectionView = ({ collection: { id, name }}) => {
     const [songs, setSongs] = useState([])
-
-    useEffect( () => {
-        collectionService.getById(id).then(c => setCollection(c))
-    }, [id])
 
     useEffect( () => {
         collectionService.getSongs(id).then(s => setSongs(s))
     }, [id])
 
     return [
-        <h2>Songs in {collection.name}:</h2>,
+        <h2>Songs in {name}:</h2>,
         songs.map(s => <div>{s.name} ({s.tones})</div>)
     ]
 }

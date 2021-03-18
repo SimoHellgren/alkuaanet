@@ -70,19 +70,19 @@ function App() {
     }
   }
 
-  const collectionMatch = useRouteMatch('/collections/:id')
-  const collectionId = collectionMatch 
-    ? Number(collectionMatch.params.id) 
-    : null
-
   const songMatch = useRouteMatch('/songs/:id')
   const song = songMatch
-    ? songs.find(s => s.id === Number(songMatch.params.id))
-    : null
-
+  ? songs.find(s => s.id === Number(songMatch.params.id))
+  : null
+  
   const composerMatch = useRouteMatch('/composers/:id')
   const composer = composerMatch
-    ? composers.find(s => s.id === Number(composerMatch.params.id))
+  ? composers.find(c => c.id === Number(composerMatch.params.id))
+  : null
+  
+  const collectionMatch = useRouteMatch('/collections/:id')
+  const collection = collectionMatch 
+    ? collections.find(c => c.id === Number(collectionMatch.params.id))
     : null
 
   const padding = {
@@ -114,7 +114,7 @@ function App() {
         </Route>
 
         <Route path='/collections/:id'>
-          <CollectionView id={collectionId}/>
+          <CollectionView collection={collection}/>
         </Route>
 
         <Route path='/collections'>
