@@ -1,30 +1,10 @@
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import { Link } from 'react-router-dom'
-import collectionService from '../services/collections'
 
-const Collection = ({collection: {id, name}}) => {
-
-    return [
-        <div>{name}</div>
-    ]
-}
-
-export const CollectionView = ({ collection: { id, name }}) => {
-    const [songs, setSongs] = useState([])
-
-    useEffect( () => {
-        collectionService.getSongs(id).then(s => setSongs(s))
-    }, [id])
-
-    return [
-        <h2>Songs in {name}:</h2>,
-        songs.map(s => <div>{s.name} ({s.tones})</div>)
-    ]
-}
 
 const CollectionList = ({collections}) => {
     return [
-        collections.map(c => <Link to={`/collections/${c.id}`}><Collection collection={c}/></Link>)
+        collections.map(c => <div><Link to={`/collections/${c.id}`}>{c.name}</Link></div>)
     ]
 }
 

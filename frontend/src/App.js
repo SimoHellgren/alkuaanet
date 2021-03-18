@@ -8,7 +8,8 @@ import SongForm from './components/SongForm'
 import SongList from './components/SongList'
 import Composer from './components/Composer'
 import ComposerList from './components/ComposerList'
-import CollectionList, { CollectionView } from './components/CollectionList'
+import Collection from './components/Collection'
+import CollectionList from './components/CollectionList'
 import songService from './services/songs'
 import composerService from './services/composers'
 import collectionService from './services/collections'
@@ -114,7 +115,7 @@ function App() {
         </Route>
 
         <Route path='/collections/:id'>
-          <CollectionView collection={collection}/>
+          <Collection collection={collection}/>
         </Route>
 
         <Route path='/collections'>
