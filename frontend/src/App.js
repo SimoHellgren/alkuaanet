@@ -6,6 +6,7 @@ import {
 import Song from './components/Song'
 import SongForm from './components/SongForm'
 import SongList from './components/SongList'
+import Composer from './components/Composer'
 import ComposerList from './components/ComposerList'
 import CollectionList, { CollectionView } from './components/CollectionList'
 import songService from './services/songs'
@@ -79,6 +80,11 @@ function App() {
     ? songs.find(s => s.id === Number(songMatch.params.id))
     : null
 
+  const composerMatch = useRouteMatch('/composers/:id')
+  const composer = composerMatch
+    ? composers.find(s => s.id === Number(composerMatch.params.id))
+    : null
+
   const padding = {
     padding: 5
   }
@@ -97,6 +103,10 @@ function App() {
 
         <Route path='/songs'>
           <SongsView songs={songs} handleCreateSong={handleCreateSong}/>
+        </Route>
+
+        <Route path='/composers/:id'>
+          <Composer composer={composer}/>
         </Route>
 
         <Route path='/composers'>
