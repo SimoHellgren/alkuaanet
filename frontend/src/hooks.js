@@ -5,11 +5,14 @@ export const useFormField = (type, initval) => {
 
     const onChange = (event) => {
         setValue(event.target.value)
-    }    
+    } 
+
+    const reset = () => setValue(initval)
 
     return {
         type,
         value,
-        onChange
+        onChange,
+        reset
     }
 }
