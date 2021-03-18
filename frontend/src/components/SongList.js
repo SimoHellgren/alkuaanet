@@ -15,7 +15,15 @@ const SongList = ({songs}) => {
       <form>
         <input {...filter}/>
       </form>,
-      <div>{showSongs.map(s =><div><Link to={`/songs/${s.id}`}>[{s.id}] {s.name} ({s.tones})</Link></div>)}</div>
+      <div>
+        {showSongs.map(s => 
+          <div>
+            <Link to={`/songs/${s.id}`}>
+              [{s.id}] {s.name} ({s.tones})
+            </Link>
+          </div>
+        )}
+      </div>
     ]
   }
 
