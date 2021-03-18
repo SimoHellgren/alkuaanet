@@ -1,16 +1,17 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useFormField } from '../hooks'
 
 const Song = ({song: {id, name, tones}, updateSong}) => {
-  const [newName, setNewName] = useState(name)
-  const [newTones, setNewTones] = useState(tones)
+  const newName = useFormField('text', name)
+  const newTones = useFormField('text', tones)
 
   const handleUpdate = (event) => {
     event.preventDefault()
 
     const updatedSong = {
       id: id,
-      name: newName,
-      tones: newTones
+      name: newName.value,
+      tones: newTones.value
     }
 
     updateSong(id, updatedSong)
@@ -21,8 +22,8 @@ const Song = ({song: {id, name, tones}, updateSong}) => {
   <div>[{id}] {name} ({tones}) </div>,
   <div>
     <form onSubmit={handleUpdate}>
-      <div>edit name: <input name='newname' value={newName} onChange={({target}) => setNewName(target.value)}/></div>
-      <div>edit tones: <input name='newtones' value={newTones} onChange={({target}) => setNewTones(target.value)}/></div>
+      <div>edit name: <input {...newName}/></div>
+      <div>edit tones: <input {...newTones}/></div>
       <button type='submit'>Save</button>
     </form>
   </div>
