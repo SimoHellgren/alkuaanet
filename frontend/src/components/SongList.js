@@ -1,18 +1,19 @@
-import React, { useState } from 'react'
+import React from 'react'
+import { useFormField } from '../hooks'
 import { Link } from 'react-router-dom'
 
 
 const SongList = ({songs}) => {
-    const [filter, setFilter] = useState("")
+    const filter = useFormField('text', '')
 
     const showSongs = songs.filter(
-      s => s.name.toLowerCase().startsWith(filter.toLowerCase())
+      s => s.name.toLowerCase().startsWith(filter.value.toLowerCase())
     )
 
     return [
       <h2>Songs:</h2>,
       <form>
-        <input id='songsearch' value={filter} onChange={({target}) => setFilter(target.value)}/>
+        <input {...filter}/>
       </form>,
       <div>{showSongs.map(s =><div><Link to={`/songs/${s.id}`}>[{s.id}] {s.name} ({s.tones})</Link></div>)}</div>
     ]
