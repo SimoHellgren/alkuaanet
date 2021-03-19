@@ -17,6 +17,7 @@ import composerService from './services/composers'
 import collectionService from './services/collections'
 
 import './App.css';
+import AddComposerForm from './components/AddComposerForm'
 
 const sortById = (a,b) => {
   if (a.id > b.id) return 1
@@ -73,6 +74,11 @@ function App() {
     }
   }
 
+  const handleAddComposer = async (lastname, firstname) => {
+    const response = await composerService.create({ lastname, firstname })
+    setComposers(composers.concat(response))
+  }
+
   const songMatch = useRouteMatch('/songs/:id')
   const song = songMatch
   ? songs.find(s => s.id === Number(songMatch.params.id))
@@ -112,6 +118,7 @@ function App() {
         </Route>
 
         <Route path='/composers'>
+          <AddComposerForm createComposer={handleAddComposer}/>
           <ComposerList composers={composers}/>
         </Route>
 
