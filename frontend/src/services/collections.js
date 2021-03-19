@@ -28,5 +28,10 @@ const update = async (id, updatedCollection) => {
     return response.data
 }
 
+const addSong = async (id, song_id) => {
+    const response = await axios.put(`${path}${id}/songs/${song_id}`)
+    return response.data
+}
+
 // eslint-disable-next-line import/no-anonymous-default-export
-export default { getAll, create, update, getSongs, getById }
+export default { getAll, create, update, getSongs, getById, addSong }

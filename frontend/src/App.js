@@ -11,6 +11,7 @@ import ComposerList from './components/ComposerList'
 import ComposerForm from './components/ComposerForm'
 import Collection from './components/Collection'
 import CollectionList from './components/CollectionList'
+import CollectionForm from './components/CollectionForm'
 import songService from './services/songs'
 import composerService from './services/composers'
 import collectionService from './services/collections'
@@ -117,6 +118,7 @@ function App() {
         </Route>
 
         <Route path='/collections/:id'>
+          <CollectionForm collection={collection} songs={songs}/>
           <Collection collection={collection}/>
         </Route>
 
