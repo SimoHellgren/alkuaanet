@@ -11,10 +11,10 @@ const SongList = ({songs}) => {
     )
 
     return <>
-      <h2>Songs:</h2>,
+      <h2>Songs:</h2>
       <form>
         <input {...filter}/>
-      </form>,
+      </form>
       <div>
         {showSongs.map(s => 
           <div key={s.id}>
