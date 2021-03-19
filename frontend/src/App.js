@@ -31,10 +31,10 @@ const sortByLastname = (a,b) => {
 }
 
 const SongsView = ({songs, handleCreateSong}) => {
-  return [
-    <SongForm createSong={handleCreateSong}/>,
+  return <>
+    <SongForm createSong={handleCreateSong}/>
     <SongList songs={songs}/>
-  ]
+  </>
 }
 
 function App() {
@@ -92,12 +92,10 @@ function App() {
     padding: 5
   }
 
-  return [
-      <div>
+  return <>
         <Link style={padding} to='/songs'>songs</Link>
         <Link style={padding} to='/composers'>composers</Link>
         <Link style={padding} to='/collections'>collections</Link>
-      </div>,
 
       <Switch>
         <Route path='/songs/:id'>
@@ -131,7 +129,7 @@ function App() {
         </Route>
 
       </Switch>
-  ]
+  </>
 }
 
 export default App;

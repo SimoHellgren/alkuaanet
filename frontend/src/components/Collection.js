@@ -8,10 +8,10 @@ const Collection = ({ collection: { id, name }}) => {
         collectionService.getSongs(id).then(s => setSongs(s))
     }, [id])
 
-    return [
-        <h2>Songs in {name}:</h2>,
-        songs.map(s => <div>{s.name} ({s.tones})</div>)
-    ]
+    return <>
+        <h2>Songs in {name}:</h2>
+        {songs.map(s => <div key={s.id}>{s.name} ({s.tones})</div>)}
+    </>
 }
 
 

@@ -12,15 +12,15 @@ const ComposerForm = ({composer, songs}) => {
 
     }
 
-    return [
-        <h2>Add song for {composer.firstname} {composer.lastname}</h2>,
+    return <>
+        <h2>Add song for {composer.firstname} {composer.lastname}</h2>
         <form onSubmit={addSong}>
           <select onChange={e => setSongId(e.target.value)}>
-              {songs.map(s => <option value={s.id}>{s.name}</option>)}
+              {songs.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
           </select>
           <button type='submit'>Add!</button>
         </form>
-      ]
+      </>
 }
 
 

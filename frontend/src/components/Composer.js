@@ -10,12 +10,12 @@ const Composer = ({composer: {id, lastname, firstname}}) => {
         )
     }, [id])
 
-    return [
-        <h2>Songs by {firstname} {lastname}</h2>,
+    return <>
+        <h2>Songs by {firstname} {lastname}</h2>
         <div>{songs.map(
-            s => <div>{s.name}</div>
+            s => <div key={s.id}>{s.name}</div>
         )}</div>
-    ]
+    </>
 }
 
 

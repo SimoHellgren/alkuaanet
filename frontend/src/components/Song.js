@@ -18,8 +18,8 @@ const Song = ({song: {id, name, tones}, updateSong}) => {
 
   }
 
-  return [
-  <div>[{id}] {name} ({tones}) </div>,
+  return <>
+  <div>[{id}] {name} ({tones}) </div>
   <div>
     <form onSubmit={handleUpdate}>
       <div>edit name: <input {...newName}/></div>
@@ -27,7 +27,7 @@ const Song = ({song: {id, name, tones}, updateSong}) => {
       <button type='submit'>Save</button>
     </form>
   </div>
-]
+  </>
       
   }
 

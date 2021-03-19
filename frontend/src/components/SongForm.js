@@ -20,14 +20,14 @@ const SongForm = ({ createSong }) => {
         
     }
     
-    return [
-      <h2>Create new song</h2>,
+    return <>
+      <h2>Create new song</h2>
       <form onSubmit={addSong}>
         <div>name: <input {...name}/></div>
         <div>tones: <input {...tones}/></div>
         <button type='submit'>Make!</button>
       </form>
-    ]
+    </>
   
   }
 

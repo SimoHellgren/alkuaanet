@@ -10,21 +10,21 @@ const SongList = ({songs}) => {
       s => s.name.toLowerCase().startsWith(filter.value.toLowerCase())
     )
 
-    return [
+    return <>
       <h2>Songs:</h2>,
       <form>
         <input {...filter}/>
       </form>,
       <div>
         {showSongs.map(s => 
-          <div>
+          <div key={s.id}>
             <Link to={`/songs/${s.id}`}>
               [{s.id}] {s.name} ({s.tones})
             </Link>
           </div>
         )}
       </div>
-    ]
+    </>
   }
 
 
