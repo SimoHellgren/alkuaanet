@@ -1,4 +1,4 @@
-from backend.app import crud, schemas
+from app import crud, schemas
 
 collection1 = schemas.CollectionCreate(name='Hyviä lauluja')
 collection2 = schemas.CollectionCreate(name='Huonoja lauluja')

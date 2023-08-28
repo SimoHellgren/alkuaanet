@@ -1,4 +1,4 @@
-from backend.app import crud, schemas
+from app import crud, schemas
 
 song1 = schemas.SongCreate(name='Test song', tones='A4')
 song2 = schemas.SongCreate(name='Another test song', tones='A3')

@@ -1,4 +1,4 @@
-from backend.app import crud, schemas
+from app import crud, schemas
 
 
 composer1 = schemas.ComposerCreate(lastname='Säveltäjä', firstname='Sanni')

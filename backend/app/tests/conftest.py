@@ -3,10 +3,10 @@ from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_utils import database_exists, create_database, drop_database
 from fastapi.testclient import TestClient
-from backend.app.config import TEST_DB_URI
-from backend.app.main import app
-from backend.app.dependencies import get_db
-from backend.app.models import Base
+from app.config import TEST_DB_URI
+from app.main import app
+from app.dependencies import get_db
+from app.models import Base
 
 engine = create_engine(TEST_DB_URI)
 
