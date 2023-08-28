@@ -42,12 +42,8 @@ def test_db_session():
     
     session = SessionLocal()
     yield session
-
-    #drop all data after each test
-    for tbl in reversed(Base.metadata.sorted_tables):
-        engine.execute(tbl.delete())
     
-    session.close()
+    session.close()    
 
 
 @pytest.fixture(scope='module')
