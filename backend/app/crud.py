@@ -8,7 +8,7 @@ def get_songs(db: Session):
     return db.query(models.Song).all()
 
 def get_song(db: Session, song_id: int):
-    return db.query(models.Song).get(song_id)
+    return db.get(models.Song, song_id)
 
 def search_song_by_name(db: Session, q: str):
     return db.query(models.Song).filter(models.Song.name.ilike(f'{q}%')).all()
@@ -31,7 +31,7 @@ def create_song(db: Session, song: schemas.SongCreate):
     return db_song
 
 def update_song(db: Session, song: schemas.SongUpdate):  
-    db_song = db.query(models.Song).get(song.id)
+    db_song = db.get(models.Song, song.id)
     db_song.updated_at = datetime.now() 
 
     if db_song.tones != song.tones:
@@ -49,7 +49,7 @@ def get_composers(db: Session):
     return db.query(models.Composer).all()
 
 def get_composer(db: Session, composer_id: int):
-    return db.query(models.Composer).get(composer_id)
+    return db.get(models.Composer, composer_id)
 
 def create_composer(db: Session, composer: schemas.ComposerCreate):
     db_composer = models.Composer(firstname=composer.firstname, lastname=composer.lastname)
@@ -59,11 +59,11 @@ def create_composer(db: Session, composer: schemas.ComposerCreate):
     return db_composer
 
 def get_songs_by_composer(db: Session, composer_id: int):
-    return db.query(models.Composer).get(composer_id).songs
+    return db.get(models.Composer, composer_id).songs
 
 def add_song_to_composer(db: Session, composer_id: int, song_id: int):
-    db_composer = db.query(models.Composer).get(composer_id)
-    db_song = db.query(models.Song).get(song_id)
+    db_composer = db.get(models.Composer, composer_id)
+    db_song = db.get(models.Song, song_id)
     
     db_composer.songs.append(db_song)
     db.commit()
@@ -76,7 +76,7 @@ def get_collections(db: Session):
     return db.query(models.Collection).all()
 
 def get_collection(db: Session, collection_id: int):
-    return db.query(models.Collection).get(collection_id)
+    return db.get(models.Collection, collection_id)
 
 def create_collection(db: Session, collection: schemas.CollectionCreate):
     db_collection = models.Collection(name=collection.name)
@@ -87,14 +87,14 @@ def create_collection(db: Session, collection: schemas.CollectionCreate):
     return db_collection
 
 def get_collection_songs(db: Session, collection_id: int):
-    return db.query(models.Collection).get(collection_id).songs
+    return db.get(models.Collection, collection_id).songs
 
 def search_collections_by_name(db: Session, q: str):
     return db.query(models.Collection).filter(models.Collection.name.ilike(f'{q}%')).all()
 
 def add_song_to_collection(db: Session, collection_id: int, song_id: int):
-   db_collection = db.query(models.Collection).get(collection_id)
-   db_song = db.query(models.Song).get(song_id)
+   db_collection = db.get(models.Collection, collection_id)
+   db_song = db.get(models.Song, song_id)
 
    db_collection.songs.append(db_song)
    db.commit()
