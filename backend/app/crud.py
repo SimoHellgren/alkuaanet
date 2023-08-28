@@ -37,7 +37,7 @@ def update_song(db: Session, song: schemas.SongUpdate):
     if db_song.tones != song.tones:
         db_song.opus =  make_opus_blob(song.tones.split('-'))
 
-    for k,v in song.dict().items():
+    for k,v in song.model_dump().items():
         setattr(db_song, k, v)
 
     db.add(db_song)
