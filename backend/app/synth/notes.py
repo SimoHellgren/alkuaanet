@@ -18,7 +18,7 @@ NATURALS = {
     "B": 2,
 }
 
-ACCIDENTALS = {"#": 1, "b": -1}
+ACCIDENTALS = {"#": 1, "b": -1, "x": 2}
 
 
 def note_to_frequency(note, basefreq=440):
