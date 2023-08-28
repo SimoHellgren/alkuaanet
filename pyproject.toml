@@ -1,0 +1,22 @@
+[tool.poetry]
+name = "alkuaanet"
+version = "0.1.0"
+description = ""
+authors = ["Simo Hellgrén <hellgrensimo@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+fastapi = "^0.103.0"
+uvicorn = {extras = ["standard"], version = "^0.23.2"}
+sqlalchemy = "^2.0.20"
+psycopg2 = "^2.9.7"
+numpy = "^1.25.2"
+telepot = "^12.7"
+requests = "^2.31.0"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
