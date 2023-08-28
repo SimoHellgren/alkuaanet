@@ -1,11 +1,12 @@
 from app import crud, schemas
 
 
-composer1 = schemas.ComposerCreate(lastname='Säveltäjä', firstname='Sanni')
-composer2 = schemas.ComposerCreate(lastname='Komposiittori', firstname='Keijo')
+composer1 = schemas.ComposerCreate(lastname="Säveltäjä", firstname="Sanni")
+composer2 = schemas.ComposerCreate(lastname="Komposiittori", firstname="Keijo")
 
-song1 = schemas.SongCreate(name='Testsong 1', tones='C4-G3-E3-C3')
-song2 = schemas.SongCreate(name='Testsong 2', tones='C4-G3-E3-C3')
+song1 = schemas.SongCreate(name="Testsong 1", tones="C4-G3-E3-C3")
+song2 = schemas.SongCreate(name="Testsong 2", tones="C4-G3-E3-C3")
+
 
 def test_create_composer(test_db_session):
     composer_in = composer1
@@ -29,7 +30,7 @@ def test_get_composer(test_db_session):
 
 def test_add_song_to_composer(test_db_session):
     # This tests two things: adding songs and getting a composer's songs.
-    # Should probably be separated somehow 
+    # Should probably be separated somehow
     composer = crud.create_composer(test_db_session, composer1)
     db_song1 = crud.create_song(test_db_session, song1)
     db_song2 = crud.create_song(test_db_session, song2)
@@ -41,9 +42,10 @@ def test_add_song_to_composer(test_db_session):
     assert db_song1 in composer_songs
     assert db_song2 not in composer_songs
 
+
 def test_add_song_to_composer2(test_db_session):
     # Ensure that adding a song to a composer does not add it to other composers
-    # Should probably be separated somehow 
+    # Should probably be separated somehow
     db_comp1 = crud.create_composer(test_db_session, composer1)
     db_comp2 = crud.create_composer(test_db_session, composer2)
     song = crud.create_song(test_db_session, song1)
@@ -55,6 +57,7 @@ def test_add_song_to_composer2(test_db_session):
 
     assert song in composer_songs1
     assert song not in composer_songs2
+
 
 def test_add_song_many_times(test_db_session):
     # Adding song to composer should be idempotent
@@ -69,12 +72,13 @@ def test_add_song_many_times(test_db_session):
     assert song in composer_songs
     assert len(composer_songs) == 1
 
+
 def test_search_composers(test_db_session):
     db_composer1 = crud.create_composer(test_db_session, composer1)
     db_composer2 = crud.create_composer(test_db_session, composer2)
 
     # ensure case insensitivity
-    composers = crud.search_composers_by_lastname(test_db_session, 'sÄVel')
+    composers = crud.search_composers_by_lastname(test_db_session, "sÄVel")
 
     assert db_composer1 in composers
     assert db_composer2 not in composers

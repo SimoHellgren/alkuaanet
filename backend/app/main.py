@@ -6,16 +6,13 @@ from .config import allowed_origins
 
 app = FastAPI()
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=allowed_origins,
-    allow_methods=['*']
-)
+app.add_middleware(CORSMiddleware, allow_origins=allowed_origins, allow_methods=["*"])
 
 app.include_router(songs.router)
 app.include_router(composers.router)
 app.include_router(collections.router)
 
-@app.get('/')
+
+@app.get("/")
 def root():
-    return 'Hello there!'
+    return "Hello there!"

@@ -7,23 +7,29 @@ class ComposerBase(BaseModel):
     lastname: str
     firstname: str = None
 
+
 class ComposerCreate(ComposerBase):
     pass
+
 
 class Composer(ComposerBase):
     model_config = ConfigDict(from_attributes=True)
     id: int
 
+
 class SongBase(BaseModel):
     name: str
 
+
 class SongCreate(SongBase):
     tones: str
+
 
 class SongUpdate(SongBase):
     id: int
     name: str
     tones: str
+
 
 class Song(SongBase):
     model_config = ConfigDict(from_attributes=True)
@@ -36,8 +42,10 @@ class Song(SongBase):
 class CollectionBase(BaseModel):
     name: str
 
+
 class CollectionCreate(CollectionBase):
     pass
+
 
 class Collection(CollectionBase):
     model_config = ConfigDict(from_attributes=True)

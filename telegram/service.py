@@ -11,29 +11,29 @@ class SongsAPI(Session):
         return super().request(method, self.baseurl + relpath, *args, **kwargs)
 
     def get_song(self, song_id):
-        return self.get(f'/songs/{song_id}').json()
+        return self.get(f"/songs/{song_id}").json()
 
     def get_song_opus(self, song_id):
-        blob = self.get(f'/songs/{song_id}/opus').content
+        blob = self.get(f"/songs/{song_id}/opus").content
         return BytesIO(blob)
 
     def search_songs(self, query):
-        return self.get(f'/songs/search', params={'q': query}).json()
+        return self.get(f"/songs/search", params={"q": query}).json()
 
     def get_collections(self):
-        return self.get('/collections').json()
+        return self.get("/collections").json()
 
     def get_collection_songs(self, collection_id):
-        return self.get(f'/collections/{collection_id}/songs').json()
+        return self.get(f"/collections/{collection_id}/songs").json()
 
     def search_collections(self, q):
-        return self.get(f'/collections/search', params={'q': q}).json()
+        return self.get(f"/collections/search", params={"q": q}).json()
 
     def get_composers(self):
-        return self.get('/composers').json()
+        return self.get("/composers").json()
 
     def get_composer_songs(self, composer_id):
-        return self.get(f'/composers/{composer_id}/songs').json()
+        return self.get(f"/composers/{composer_id}/songs").json()
 
     def search_composers(self, lastname):
-        return self.get(f'/composers/search', params={'lastname': lastname}).json()
+        return self.get(f"/composers/search", params={"lastname": lastname}).json()

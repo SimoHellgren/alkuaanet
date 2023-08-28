@@ -15,9 +15,11 @@ config = context.config
 fileConfig(config.config_file_name)
 
 import os, sys
-sys.path.insert(0, os.getcwd()) #bit of an ugly hack but will do for now
 
-from backend.app.models import Base # import so that models are present, too
+sys.path.insert(0, os.getcwd())  # bit of an ugly hack but will do for now
+
+from backend.app.models import Base  # import so that models are present, too
+
 target_metadata = Base.metadata
 
 # other values from the config, defined by the needs of env.py,
@@ -26,6 +28,7 @@ target_metadata = Base.metadata
 # ... etc.
 
 from backend.app.config import DB_URI
+
 
 def run_migrations_offline():
     """Run migrations in 'offline' mode.
@@ -40,7 +43,7 @@ def run_migrations_offline():
 
     """
     # url = config.get_main_option("sqlalchemy.url")
-    url = DB_URI # this is here to avoid committing DB_URI in alembic.ini
+    url = DB_URI  # this is here to avoid committing DB_URI in alembic.ini
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -65,12 +68,12 @@ def run_migrations_online():
     #     poolclass=pool.NullPool,
     # )
 
-    connectable = create_engine(DB_URI) # this is here to avoid committing DB_URI in alembic.ini
+    connectable = create_engine(
+        DB_URI
+    )  # this is here to avoid committing DB_URI in alembic.ini
 
     with connectable.connect() as connection:
-        context.configure(
-            connection=connection, target_metadata=target_metadata
-        )
+        context.configure(connection=connection, target_metadata=target_metadata)
 
         with context.begin_transaction():
             context.run_migrations()
