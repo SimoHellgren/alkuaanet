@@ -10,13 +10,8 @@ router = APIRouter(prefix="/composers", tags=["composers"])
 
 
 @router.get("/", response_model=List[schemas.Composer])
-def read_composers(db: Session = Depends(get_db)):
-    return crud.get_composers(db)
-
-
-@router.get("/search", response_model=List[schemas.Composer])
-def search_composers(lastname: str, db: Session = Depends(get_db)):
-    return crud.search_composers_by_lastname(db, lastname)
+def read_composers(db: Session = Depends(get_db), filter: str = ""):
+    return crud.get_composers(db, filter)
 
 
 @router.post("/", response_model=schemas.Composer, status_code=status.HTTP_201_CREATED)

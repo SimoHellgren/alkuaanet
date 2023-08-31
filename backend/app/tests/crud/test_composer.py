@@ -78,7 +78,7 @@ def test_search_composers(test_db_session):
     db_composer2 = crud.create_composer(test_db_session, composer2)
 
     # ensure case insensitivity
-    composers = crud.search_composers_by_lastname(test_db_session, "sÄVel")
+    composers = crud.get_composers(test_db_session, "lastname startswith 'sÄVel'")
 
     assert db_composer1 in composers
     assert db_composer2 not in composers

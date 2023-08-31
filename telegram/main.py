@@ -68,19 +68,15 @@ def on_chat(message):
         bot.sendMessage(chat_id, msg)
 
     elif text.startswith("/collections"):
-        if args:
-            collections = api.search_collections(args)
-        else:
-            collections = api.get_collections()
+        query = f"name startswith '{args}'" if args else {}
+        collections = api.get_collections(params={"filter": query})
 
         kb = basic_keyboard(collections, "collection")
         bot.sendMessage(chat_id, "Collections", reply_markup=kb)
 
     elif text.startswith("/composers"):
-        if args:
-            composers = api.search_composers(args)
-        else:
-            composers = api.get_composers()
+        filt = f"lastname startswith '{args}'" if args else {}
+        composers = api.get_composers(params={"filter": filt})
 
         kb = composer_keyboard(
             sorted(composers, key=lambda x: (x["lastname"], x["firstname"] or ""))
@@ -89,7 +85,15 @@ def on_chat(message):
         bot.sendMessage(chat_id, "Composers", reply_markup=kb)
 
     else:
-        songs = sorted(api.search_songs(text), key=lambda x: x["name"])
+        if text.startswith("!"):
+            query = f"not (name startswith '{text[1:]}')"
+        else:
+            query = f"name startswith '{text}'"
+
+        songs = sorted(
+            api.get_songs(params={"filter": query}),
+            key=lambda x: x["name"],
+        )
 
         if songs:
             kb = basic_keyboard(songs, "song")

@@ -1,19 +1,18 @@
-from datetime import date, datetime
+from datetime import datetime
 from sqlalchemy.orm import Session
+from sqlalchemy import text
 from . import models, schemas
 from .synth import make_opus_blob
+from .odata.filter_parser import parse_odata_filter
 
 
-def get_songs(db: Session):
-    return db.query(models.Song).all()
+def get_songs(db: Session, query=None):
+    expr = parse_odata_filter(query)
+    return db.query(models.Song).filter(text(expr)).all()
 
 
 def get_song(db: Session, song_id: int):
     return db.get(models.Song, song_id)
-
-
-def search_song_by_name(db: Session, q: str):
-    return db.query(models.Song).filter(models.Song.name.ilike(f"{q}%")).all()
 
 
 def create_song(db: Session, song: schemas.SongCreate):
@@ -50,8 +49,9 @@ def update_song(db: Session, song: schemas.SongUpdate):
     return db_song
 
 
-def get_composers(db: Session):
-    return db.query(models.Composer).all()
+def get_composers(db: Session, query=None):
+    expr = parse_odata_filter(query)
+    return db.query(models.Composer).filter(text(expr)).all()
 
 
 def get_composer(db: Session, composer_id: int):
@@ -81,16 +81,9 @@ def add_song_to_composer(db: Session, composer_id: int, song_id: int):
     return
 
 
-def search_composers_by_lastname(db: Session, lastname: str):
-    return (
-        db.query(models.Composer)
-        .filter(models.Composer.lastname.ilike(f"{lastname}%"))
-        .all()
-    )
-
-
-def get_collections(db: Session):
-    return db.query(models.Collection).all()
+def get_collections(db: Session, query=None):
+    expr = parse_odata_filter(query)
+    return db.query(models.Collection).filter(text(expr)).all()
 
 
 def get_collection(db: Session, collection_id: int):

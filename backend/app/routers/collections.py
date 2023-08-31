@@ -9,13 +9,8 @@ router = APIRouter(prefix="/collections", tags=["collections"])
 
 
 @router.get("/", response_model=List[schemas.Collection])
-def read_collections(db: Session = Depends(get_db)):
-    return crud.get_collections(db)
-
-
-@router.get("/search", response_model=List[schemas.Collection])
-def search_songs_by_collection_name(q: str, db: Session = Depends(get_db)):
-    return crud.search_collections_by_name(db, q)
+def read_collections(db: Session = Depends(get_db), filter: str = ""):
+    return crud.get_collections(db, filter)
 
 
 @router.get("/{collection_id}", response_model=schemas.Collection)

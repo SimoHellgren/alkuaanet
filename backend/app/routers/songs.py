@@ -12,8 +12,8 @@ router = APIRouter(prefix="/songs", tags=["songs"])
 
 
 @router.get("/", response_model=List[schemas.Song])
-def read_songs(db: Session = Depends(get_db)):
-    return crud.get_songs(db)
+def read_songs(db: Session = Depends(get_db), filter: str = ""):
+    return crud.get_songs(db, filter)
 
 
 @router.get("/search", response_model=List[schemas.Song])
