@@ -15,6 +15,7 @@ psycopg2 = "^2.9.7"
 numpy = "^1.25.2"
 telepot = "^12.7"
 requests = "^2.31.0"
+lark = "^1.1.7"
 
 
 [tool.poetry.group.dev.dependencies]
