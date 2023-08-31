@@ -5,7 +5,7 @@ from datetime import datetime
 
 class ComposerBase(BaseModel):
     lastname: str
-    firstname: str = None
+    firstname: Optional[str] = None
 
 
 class ComposerCreate(ComposerBase):
