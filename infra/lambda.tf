@@ -59,7 +59,7 @@ resource "aws_iam_role_policy_attachment" "test-attach" {
 data "archive_file" "lambda" {
   type        = "zip"
   source_dir  = "${path.module}/../graph/"
-  excludes    = ["deps", "schema.py"]
+  excludes    = ["deps"] # this can be removed after lambda_layer deploy is automated, and the folder is cleaned up
   output_path = "${path.module}/managed-files/lambda_payload.zip"
 }
 
@@ -67,7 +67,7 @@ resource "aws_lambda_function" "test_lambda" {
   filename      = "${path.module}/managed-files/lambda_payload.zip"
   function_name = "tf_lambda"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "lambda_function.lambda_handler"
+  handler       = "lambda_function.handler"
 
   source_code_hash = data.archive_file.lambda.output_base64sha256
 
