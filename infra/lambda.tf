@@ -71,6 +71,8 @@ resource "aws_lambda_function" "test_lambda" {
 
   source_code_hash = data.archive_file.lambda.output_base64sha256
 
+  layers = [aws_lambda_layer_version.lambda_layer.arn]
+
   runtime = "python3.11"
 }
 
