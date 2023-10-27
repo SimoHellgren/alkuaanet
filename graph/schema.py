@@ -32,8 +32,8 @@ def search_songs(string: str) -> list[SearchResult]:
     return [SearchResult.from_db(song) for song in data]
 
 
-def get_song(song_id):
-    data = crud.get_by_pk(song_id)
+def get_song(song_id: str):
+    data = crud.get_by_pk(song_id)["Items"][0]
     return Song(
         id=data["pk"], name=data["name"], tones=data["tones"], opus=data["opus"]
     )
