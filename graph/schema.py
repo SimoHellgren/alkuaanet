@@ -5,7 +5,7 @@ from mangum import Mangum
 
 
 @strawberry.type
-class Song:
+class SearchResult:
     id: str
     name: str
 
@@ -14,20 +14,36 @@ class Song:
         return cls(id=record["pk"], name=record["name"])
 
 
-def get_songs() -> list[Song]:
+@strawberry.type
+class Song:
+    id: str
+    name: str
+    tones: str
+    opus: str
+
+
+def get_songs() -> list[SearchResult]:
     data = crud.get_songs()["Items"]
-    return [Song.from_db(song) for song in data]
+    return [SearchResult.from_db(song) for song in data]
 
 
-def search_songs(string: str) -> list[Song]:
+def search_songs(string: str) -> list[SearchResult]:
     data = crud.search_songs(f"name:{string}")["Items"]
-    return [Song.from_db(song) for song in data]
+    return [SearchResult.from_db(song) for song in data]
+
+
+def get_song(song_id):
+    data = crud.get_by_pk(song_id)
+    return Song(
+        id=data["pk"], name=data["name"], tones=data["tones"], opus=data["opus"]
+    )
 
 
 @strawberry.type
 class Query:
-    songs: list[Song] = strawberry.field(resolver=get_songs)
-    search: list[Song] = strawberry.field(resolver=search_songs)
+    song: Song = strawberry.field(resolver=get_song)
+    songs: list[SearchResult] = strawberry.field(resolver=get_songs)
+    search: list[SearchResult] = strawberry.field(resolver=search_songs)
 
 
 schema = strawberry.Schema(query=Query)
