@@ -38,7 +38,7 @@ def get_song(song_id: str):
         id=data["pk"],
         name=data["name"],
         tones=data["tones"],
-        opus=data["opus"].value.encode("utf-8"),
+        opus=data["opus"].value.decode("utf-8"),
     )
 
 
