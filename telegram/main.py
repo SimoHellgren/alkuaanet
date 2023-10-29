@@ -4,6 +4,7 @@ import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from .service import SongsAPI
+from . import service as graph
 from .config import token, apiurl
 
 # todo: logging configuration into separate module or config
@@ -25,6 +26,13 @@ log.addHandler(file_handler)
 
 api = SongsAPI(apiurl)
 bot = telepot.Bot(token)
+
+
+def song_keyboard(data):
+    buttons = [
+        [InlineKeyboardButton(text=d["name"], callback_data=d["id"])] for d in data
+    ]
+    return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
 def basic_keyboard(data, kind):
@@ -85,18 +93,10 @@ def on_chat(message):
         bot.sendMessage(chat_id, "Composers", reply_markup=kb)
 
     else:
-        if text.startswith("!"):
-            query = f"not (name startswith '{text[1:]}')"
-        else:
-            query = f"name startswith '{text}'"
-
-        songs = sorted(
-            api.get_songs(params={"filter": query}),
-            key=lambda x: x["name"],
-        )
+        songs = graph.search_songs(text)
 
         if songs:
-            kb = basic_keyboard(songs, "song")
+            kb = song_keyboard(songs)
             bot.sendMessage(chat_id, f"Results for {text}", reply_markup=kb)
         else:
             bot.sendMessage(chat_id, f"No results for {text}")
@@ -111,17 +111,13 @@ def song_to_message(song):
 def on_callback(message):
     query_id, chat_id, callback = telepot.glance(message, flavor="callback_query")
 
-    kind, rid = callback.split("_")
+    kind, rid = callback.split(":")
 
     if kind == "song":
-        song = api.get_song(rid)
+        song = graph.get_song(callback)
 
-        log.info(
-            f"kind={kind!r} id={song['id']!r} name={song['name']!r} chat={chat_id!r}"
-        )
-        opus = api.get_song_opus(rid)
         bot.sendMessage(chat_id, song_to_message(song))
-        bot.sendVoice(chat_id, opus)
+        bot.sendVoice(chat_id, song["opus"])
 
     elif kind == "collection":
         songs = sorted(api.get_collection_songs(rid), key=lambda x: x["name"])

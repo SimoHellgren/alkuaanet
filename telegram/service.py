@@ -1,5 +1,32 @@
 from io import BytesIO
+import base64
 from requests import Session
+import requests
+from . import config
+
+
+# graph api wrapper implementation
+def query(q: str):
+    return requests.post(config.apiurl, json={"query": q}).json()
+
+
+def search_songs(search_string: str):
+    q = f"""{{search (string: "{search_string}") {{id, name}}}}"""
+
+    result = query(q)
+
+    return result["data"]["search"]
+
+
+def get_song(song_id):
+    q = f"""{{song (songId: "{song_id}") {{ id, name tones, opus }} }}"""
+    result = query(q)
+    song = result["data"]["song"]
+
+    # convert opus to bytestream
+    opus = BytesIO(base64.b64decode(song["opus"]))
+    song["opus"] = opus
+    return song
 
 
 class SongsAPI(Session):
