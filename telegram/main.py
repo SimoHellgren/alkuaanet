@@ -24,10 +24,8 @@ COMMANDS = {
 def handle_search_command(command, args):
     kind = COMMANDS.get(command)
 
-    # this is a touch ugly
     if not kind:
-        kind = graph.Kind.song
-        args = command
+        return f"Unknown command '{command}'", None
 
     data = graph.search(kind, args)
 
@@ -41,11 +39,22 @@ def handle_search_command(command, args):
     return msg, kb
 
 
+def interpret_command(message):
+    if not message.startswith("/"):
+        command = "/song"
+        args = message
+
+    else:
+        command, _, args = message.partition(" ")
+
+    return command, args
+
+
 def on_chat(message):
     chat_id = message["chat"]["id"]
     text = message["text"].strip()
 
-    command, _, args = text.partition(" ")
+    command, args = interpret_command(text)
 
     # TODO: refactor command handling to be uniform
     if command == "/start":
