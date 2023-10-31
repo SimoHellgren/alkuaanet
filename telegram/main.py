@@ -28,7 +28,7 @@ api = SongsAPI(apiurl)
 bot = telepot.Bot(token)
 
 
-def song_keyboard(data):
+def reply_keyboard(data):
     buttons = [
         [InlineKeyboardButton(text=d["name"], callback_data=d["id"])] for d in data
     ]
@@ -43,17 +43,31 @@ def basic_keyboard(data, kind):
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
 
-def composer_keyboard(composers):
-    buttons = [
-        [
-            InlineKeyboardButton(
-                text=f"{c['lastname']}, {c['firstname']}",
-                callback_data=f"composer_{c['id']}",
-            )
-        ]
-        for c in composers
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
+COMMANDS = {
+    "/composers": graph.Kind.composer,
+    "/collections": graph.Kind.collection,
+    "/song": graph.Kind.song,
+}
+
+
+def handle_search_command(command, args):
+    kind = COMMANDS.get(command)
+
+    # this is a touch ugly
+    if not kind:
+        kind = graph.Kind.song
+        args = command
+
+    data = graph.search(kind, args)
+
+    if data:
+        kb = reply_keyboard(data)
+        msg = f"Results for {kind} {args}"
+    else:
+        kb = None
+        msg = f"No results for {kind} {args}"
+
+    return msg, kb
 
 
 def on_chat(message):
@@ -62,7 +76,8 @@ def on_chat(message):
 
     command, _, args = text.partition(" ")
 
-    if text == "/start":
+    # TODO: refactor command handling to be uniform
+    if command == "/start":
         msg = (
             "Tervetuloa alkuäänibottiin!\n\n"
             "Botti hakee biisejä, säveltäjiä ja kokoelmia. Testaa esimerkiksi:\n\n"
@@ -75,31 +90,9 @@ def on_chat(message):
 
         bot.sendMessage(chat_id, msg)
 
-    elif text.startswith("/collections"):
-        query = f"name startswith '{args}'" if args else {}
-        collections = api.get_collections(params={"filter": query})
-
-        kb = basic_keyboard(collections, "collection")
-        bot.sendMessage(chat_id, "Collections", reply_markup=kb)
-
-    elif text.startswith("/composers"):
-        filt = f"lastname startswith '{args}'" if args else {}
-        composers = api.get_composers(params={"filter": filt})
-
-        kb = composer_keyboard(
-            sorted(composers, key=lambda x: (x["lastname"], x["firstname"] or ""))
-        )
-
-        bot.sendMessage(chat_id, "Composers", reply_markup=kb)
-
     else:
-        songs = graph.search_songs(text)
-
-        if songs:
-            kb = song_keyboard(songs)
-            bot.sendMessage(chat_id, f"Results for {text}", reply_markup=kb)
-        else:
-            bot.sendMessage(chat_id, f"No results for {text}")
+        msg, kb = handle_search_command(command, args)
+        bot.sendMessage(chat_id, msg, reply_markup=kb)
 
 
 def song_to_message(song):

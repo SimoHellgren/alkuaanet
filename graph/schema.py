@@ -22,14 +22,9 @@ class Song:
     opus: str
 
 
-def get_songs() -> list[SearchResult]:
-    data = crud.get_songs()["Items"]
-    return [SearchResult.from_db(song) for song in data]
-
-
-def search_songs(string: str) -> list[SearchResult]:
-    data = crud.search_songs(f"name:{string}")["Items"]
-    return [SearchResult.from_db(song) for song in data]
+def search(kind: str, string: str) -> list[SearchResult]:
+    data = crud.search(kind, f"name:{string}")["Items"]
+    return [SearchResult.from_db(datum) for datum in data]
 
 
 def get_song(song_id: str):
@@ -45,8 +40,7 @@ def get_song(song_id: str):
 @strawberry.type
 class Query:
     song: Song = strawberry.field(resolver=get_song)
-    songs: list[SearchResult] = strawberry.field(resolver=get_songs)
-    search: list[SearchResult] = strawberry.field(resolver=search_songs)
+    search: list[SearchResult] = strawberry.field(resolver=search)
 
 
 schema = strawberry.Schema(query=Query)
