@@ -16,11 +16,11 @@ def search(kind: str, string: str):
     return result
 
 
-def get_by_pk(item_id):
+def get_by_pk(item_id: str, sort_key: str):
     """item_id example: song:1"""
     result = table.query(
-        KeyConditionExpression=f"pk = :id",
-        ExpressionAttributeValues={":id": item_id},
+        KeyConditionExpression=f"pk = :id and begins_with(sk, :sort_key)",
+        ExpressionAttributeValues={":id": item_id, ":sort_key": sort_key},
     )
 
     return result

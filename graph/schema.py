@@ -27,8 +27,13 @@ def search(kind: str, string: str) -> list[SearchResult]:
     return [SearchResult.from_db(datum) for datum in data]
 
 
+def get_items(pk: str, sk: str):
+    data = crud.get_by_pk(pk, sk)["Items"]
+    return [SearchResult(id=datum["sk"], name=datum["name"]) for datum in data]
+
+
 def get_song(song_id: str):
-    data = crud.get_by_pk(song_id)["Items"][0]
+    data = crud.get_by_pk(song_id, "name")["Items"][0]
     return Song(
         id=data["pk"],
         name=data["name"],
@@ -40,6 +45,7 @@ def get_song(song_id: str):
 @strawberry.type
 class Query:
     song: Song = strawberry.field(resolver=get_song)
+    item: list[SearchResult] = strawberry.field(resolver=get_items)
     search: list[SearchResult] = strawberry.field(resolver=search)
 
 

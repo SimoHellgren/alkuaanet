@@ -3,9 +3,8 @@ from time import gmtime
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
-from .service import SongsAPI
 from . import service as graph
-from .config import token, apiurl
+from .config import token
 
 # todo: logging configuration into separate module or config
 log = logging.getLogger(__name__)
@@ -24,21 +23,12 @@ file_handler = logging.FileHandler("./telegram/songs.log")
 file_handler.setFormatter(log_formatter)
 log.addHandler(file_handler)
 
-api = SongsAPI(apiurl)
 bot = telepot.Bot(token)
 
 
 def reply_keyboard(data):
     buttons = [
         [InlineKeyboardButton(text=d["name"], callback_data=d["id"])] for d in data
-    ]
-    return InlineKeyboardMarkup(inline_keyboard=buttons)
-
-
-def basic_keyboard(data, kind):
-    buttons = [
-        [InlineKeyboardButton(text=d["name"], callback_data=f"{kind}_{d['id']}")]
-        for d in data
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -102,9 +92,9 @@ def song_to_message(song):
 
 
 def on_callback(message):
-    query_id, chat_id, callback = telepot.glance(message, flavor="callback_query")
+    _, chat_id, callback = telepot.glance(message, flavor="callback_query")
 
-    kind, rid = callback.split(":")
+    kind, _ = callback.split(":")
 
     if kind == "song":
         song = graph.get_song(callback)
@@ -112,23 +102,14 @@ def on_callback(message):
         bot.sendMessage(chat_id, song_to_message(song))
         bot.sendVoice(chat_id, song["opus"])
 
-    elif kind == "collection":
-        songs = sorted(api.get_collection_songs(rid), key=lambda x: x["name"])
+    else:
+        songs = graph.get_songlist(callback)
 
         if songs:
-            kb = basic_keyboard(songs, "song")
-            bot.sendMessage(chat_id, f"Songs in collection:", reply_markup=kb)
+            kb = reply_keyboard(sorted(songs, key=lambda x: x["name"]))
+            bot.sendMessage(chat_id, "Results:", reply_markup=kb)
         else:
-            bot.sendMessage(chat_id, f"No songs in collection")
-
-    elif kind == "composer":
-        songs = sorted(api.get_composer_songs(rid), key=lambda x: x["name"])
-
-        if songs:
-            kb = basic_keyboard(songs, "song")
-            bot.sendMessage(chat_id, f"Songs by composer:", reply_markup=kb)
-        else:
-            bot.sendMessage(chat_id, f"No songs by composer")
+            bot.sendMessage(chat_id, "No results")
 
 
 message_loop = MessageLoop(bot, {"chat": on_chat, "callback_query": on_callback})
