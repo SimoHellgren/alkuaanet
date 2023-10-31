@@ -1,27 +1,8 @@
-import logging
-from time import gmtime
 import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from . import service as graph
 from .config import token
-
-# todo: logging configuration into separate module or config
-log = logging.getLogger(__name__)
-log.setLevel(logging.INFO)
-
-log_formatter = logging.Formatter(
-    "[%(asctime)s] {%(name)s} %(levelname)s - %(message)s"
-)
-log_formatter.converter = gmtime
-
-# stream_handler = logging.StreamHandler()
-# stream_handler.setFormatter(log_formatter)
-# log.addHandler(stream_handler)
-
-file_handler = logging.FileHandler("./telegram/songs.log")
-file_handler.setFormatter(log_formatter)
-log.addHandler(file_handler)
 
 bot = telepot.Bot(token)
 
