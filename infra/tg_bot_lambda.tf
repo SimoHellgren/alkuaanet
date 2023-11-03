@@ -14,7 +14,18 @@ resource "aws_lambda_function" "telegram_bot_lambda" {
 
   layers = [aws_lambda_layer_version.telegram_bot_lambda_layer.arn]
 
+  environment {
+    variables = {
+      API_URL = aws_lambda_function_url.graph_api_lambda_url.function_url
+    }
+  }
+
   runtime = "python3.11"
+}
+
+resource "aws_lambda_function_url" "telegram_bot_lambda_url" {
+  function_name      = aws_lambda_function.telegram_bot_lambda.function_name
+  authorization_type = "NONE"
 }
 
 resource "aws_cloudwatch_log_group" "telegram_bot_log_group" {

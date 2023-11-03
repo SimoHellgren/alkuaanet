@@ -66,7 +66,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
   filename      = "${path.module}/managed-files/graph_lambda_payload.zip"
   function_name = "alkuaanet-graph-api"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "lambda_function.handler"
+  handler       = "schema.handler"
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
@@ -75,6 +75,10 @@ resource "aws_lambda_function" "graph_api_lambda" {
   runtime = "python3.11"
 }
 
+resource "aws_lambda_function_url" "graph_api_lambda_url" {
+  function_name      = aws_lambda_function.graph_api_lambda.function_name
+  authorization_type = "NONE"
+}
 
 resource "aws_cloudwatch_log_group" "graph_api_log_group" {
   name              = "/aws/lambda/${aws_lambda_function.graph_api_lambda.function_name}"
