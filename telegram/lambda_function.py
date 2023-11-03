@@ -4,7 +4,11 @@ import json
 
 def handler(event, context):
     data = json.loads(event["body"])
-    chat_id = data["message"]["chat"]["id"]
-    message = data["message"]["text"]
 
-    bot.sendMessage(chat_id, message)
+    if "message" in data:
+        kind = "message"
+
+    elif "callback_query" in data:
+        kind = "callback_query"
+
+    bot.handle(data[kind])

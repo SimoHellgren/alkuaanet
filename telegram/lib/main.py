@@ -1,5 +1,5 @@
 import telepot
-from telepot.loop import MessageLoop
+from telepot.helper import Router
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from . import service as graph
 import os
@@ -104,4 +104,4 @@ def on_callback(message):
             bot.sendMessage(chat_id, "No results")
 
 
-message_loop = MessageLoop(bot, {"chat": on_chat, "callback_query": on_callback})
+bot._router = Router(telepot.flavor, {"chat": on_chat, "callback_query": on_callback})
