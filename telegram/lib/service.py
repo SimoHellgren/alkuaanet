@@ -1,8 +1,10 @@
 from io import BytesIO
 import base64
 import requests
-from . import config
 from enum import StrEnum, auto
+import os
+
+APIURL = os.environ["API_URL"]
 
 
 class Kind(StrEnum):
@@ -13,7 +15,7 @@ class Kind(StrEnum):
 
 # graph api wrapper implementation
 def query(q: str):
-    return requests.post(config.apiurl, json={"query": q}).json()
+    return requests.post(APIURL, json={"query": q}).json()
 
 
 def search(kind: Kind, search_string: str):

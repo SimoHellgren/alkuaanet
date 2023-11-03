@@ -2,7 +2,9 @@ import telepot
 from telepot.loop import MessageLoop
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from . import service as graph
-from .config import token
+import os
+
+token = os.environ["BOT_TOKEN"]
 
 bot = telepot.Bot(token)
 
