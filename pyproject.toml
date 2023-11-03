@@ -9,8 +9,6 @@ readme = "README.md"
 [tool.poetry.dependencies]
 python = "^3.11"
 numpy = "^1.25.2"
-telepot = "^12.7"
-requests = "^2.31.0"
 
 
 [tool.poetry.group.dev.dependencies]
@@ -19,6 +17,11 @@ black = "^23.7.0"
 flake8 = "^6.1.0"
 boto3 = "^1.28.66"
 uvicorn = "^0.23.2"
+
+
+[tool.poetry.group.telegram.dependencies]
+telepot = "^12.7"
+requests = "^2.31.0"
 
 
 [tool.poetry.group.graphql.dependencies]
