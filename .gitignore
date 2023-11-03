@@ -7,3 +7,4 @@ telegram/config.py
 frontend/src/config.json
 debug_db.py
 *.log
+.env
