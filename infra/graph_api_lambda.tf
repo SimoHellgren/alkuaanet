@@ -12,7 +12,6 @@ data "aws_iam_policy_document" "assume_role" {
 }
 
 data "aws_iam_policy_document" "dynamodb_access" {
-  # dynamodb
   statement {
     effect = "Allow"
     actions = [
@@ -51,25 +50,25 @@ resource "aws_iam_role" "iam_for_lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "test-attach" {
+resource "aws_iam_role_policy_attachment" "graph_api_lambda_iam_attachment" {
   role       = aws_iam_role.iam_for_lambda.name
   policy_arn = aws_iam_policy.dynamodb_policy.arn
 }
 
-data "archive_file" "lambda" {
+data "archive_file" "graph_api_lambda_payload" {
   type        = "zip"
   source_dir  = "${path.module}/../graph/"
   excludes    = ["deps"] # this can be removed after lambda_layer deploy is automated, and the folder is cleaned up
-  output_path = "${path.module}/managed-files/lambda_payload.zip"
+  output_path = "${path.module}/managed-files/graph_lambda_payload.zip"
 }
 
-resource "aws_lambda_function" "test_lambda" {
-  filename      = "${path.module}/managed-files/lambda_payload.zip"
-  function_name = "tf_lambda"
+resource "aws_lambda_function" "graph_api_lambda" {
+  filename      = "${path.module}/managed-files/graph_lambda_payload.zip"
+  function_name = "alkuaanet-graph-api"
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "lambda_function.handler"
 
-  source_code_hash = data.archive_file.lambda.output_base64sha256
+  source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
   layers = [aws_lambda_layer_version.lambda_layer.arn]
 
@@ -77,8 +76,8 @@ resource "aws_lambda_function" "test_lambda" {
 }
 
 
-resource "aws_cloudwatch_log_group" "function_log_group" {
-  name              = "/aws/lambda/${aws_lambda_function.test_lambda.function_name}"
+resource "aws_cloudwatch_log_group" "graph_api_log_group" {
+  name              = "/aws/lambda/${aws_lambda_function.graph_api_lambda.function_name}"
   retention_in_days = 7
   lifecycle {
     prevent_destroy = false
