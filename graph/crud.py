@@ -24,3 +24,12 @@ def get_by_pk(item_id: str, sort_key: str):
     )
 
     return result
+
+
+def get_opus(tones):
+    result = table.query(
+        KeyConditionExpression=f"pk = :pk and sk = :sort_key",
+        ExpressionAttributeValues={":pk": "opus", ":sort_key": tones},
+    )
+
+    return result["Items"][0]["opus"].value.decode("utf-8")
