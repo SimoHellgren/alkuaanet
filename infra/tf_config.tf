@@ -4,6 +4,11 @@ terraform {
       source  = "hashicorp/aws"
       version = "~> 5"
     }
+
+    docker = {
+      source  = "kreuzwerker/docker"
+      version = "~> 3"
+    }
   }
 }
 
