@@ -34,11 +34,12 @@ def get_items(pk: str, sk: str):
 
 def get_song(song_id: str):
     data = crud.get_by_pk(song_id, "name")["Items"][0]
+    opus = crud.get_opus(data["tones"])
     return Song(
         id=data["pk"],
         name=data["name"],
         tones=data["tones"],
-        opus=data["opus"].value.decode("utf-8"),
+        opus=opus,
     )
 
 
