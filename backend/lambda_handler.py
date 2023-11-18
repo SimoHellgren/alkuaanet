@@ -4,9 +4,8 @@ from app.synth import make_opus_blob
 
 
 def handler(event, context):
-    print(event)
-    tones = event.get("tones", [])
-
+    body = json.loads(event.get("body"))
+    tones = body.get("tones", [])
     return {
         "statusCode": 200,
         "headers": {"Content-Type": "audio/ogg"},
