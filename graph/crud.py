@@ -30,6 +30,42 @@ def get_by_pk(item_id: str, sort_key: str):
     return result
 
 
+def get_next_id(kind: str):
+    """Gets the next id for song, composer or collection.
+    Note that the id gets incremented regardless of whether
+    you actually use it or not.
+    """
+    response = table.update_item(
+        Key={
+            "pk": "sequence",
+            "sk": f"{kind}_id",
+        },
+        ReturnValues="ALL_NEW",
+        UpdateExpression="SET current_value = current_value + :incr",
+        ExpressionAttributeValues={":incr": 1},
+    )
+
+    num = response["Attributes"]["current_value"]
+
+    return f"{kind}:{num}"
+
+
+def create_song(name: str, tones: str):
+    song_id = get_next_id("song")
+
+    table.put_item(
+        Item={
+            "pk": song_id,
+            "sk": "name:" + name.lower(),
+            "name": name,
+            "tones": tones,
+            "type": "song",
+        }
+    )
+
+    return song_id
+
+
 def get_opus(tones):
     result = table.query(
         KeyConditionExpression=f"pk = :pk and sk = :sort_key",
@@ -54,7 +90,7 @@ def create_opus(tones: list):
         Item={
             "pk": "opus",
             "sk": "-".join(tones),
-            "opus": opus,
+            "opus": opus.encode("utf-8"),
             "type": "opus",
         }
     )
