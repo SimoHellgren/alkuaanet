@@ -1,8 +1,12 @@
+import json
 import boto3
+from io import StringIO
 
-client = boto3.resource("dynamodb")
+dynamo = boto3.resource("dynamodb")
 
-table = client.Table("songs")
+table = dynamo.Table("songs")
+
+lambdafunc = boto3.client("lambda")
 
 
 def search(kind: str, string: str):
@@ -33,3 +37,24 @@ def get_opus(tones):
     )
 
     return result["Items"][0]["opus"].value.decode("utf-8")
+
+
+def create_opus(tones: list):
+    # no idea why the payload needs double json.dumps,
+    # should probably figure that out
+    response = lambdafunc.invoke(
+        FunctionName="alkuaanet-synth",
+        InvocationType="RequestResponse",
+        Payload=json.dumps({"body": json.dumps({"tones": tones})}),
+    )
+
+    opus = json.loads(response["Payload"].read()).get("body")
+
+    table.put_item(
+        Item={
+            "pk": "opus",
+            "sk": "-".join(tones),
+            "opus": opus,
+            "type": "opus",
+        }
+    )
