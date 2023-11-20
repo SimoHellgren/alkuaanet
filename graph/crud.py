@@ -20,6 +20,17 @@ def search(kind: str, string: str):
     return result
 
 
+def opus_exists(tones: str) -> bool:
+    result = table.query(
+        IndexName="LookupIndex",
+        KeyConditionExpression="#PK = :opus AND sk = :tones",
+        ExpressionAttributeNames={"#PK": "type"},
+        ExpressionAttributeValues={":opus": "opus", ":tones": tones},
+    )
+
+    return result["Count"] > 0
+
+
 def get_by_pk(item_id: str, sort_key: str):
     """item_id example: song:1"""
     result = table.query(
@@ -62,6 +73,13 @@ def create_song(name: str, tones: str):
             "type": "song",
         }
     )
+
+    # create opus if needed
+    if not opus_exists(tones):
+        create_opus(tones.split("-"))
+        print("Created opus for", tones)
+    else:
+        print("Opus found for", tones)
 
     return song_id
 
