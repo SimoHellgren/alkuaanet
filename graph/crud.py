@@ -64,15 +64,15 @@ def get_next_id(kind: str):
 def create_song(name: str, tones: str):
     song_id = get_next_id("song")
 
-    table.put_item(
-        Item={
-            "pk": song_id,
-            "sk": "name:" + name.lower(),
-            "name": name,
-            "tones": tones,
-            "type": "song",
-        }
-    )
+    item = {
+        "pk": song_id,
+        "sk": "name:" + name.lower(),
+        "name": name,
+        "tones": tones,
+        "type": "song",
+    }
+
+    song = table.put_item(Item=item)
 
     # create opus if needed
     if not opus_exists(tones):
@@ -81,7 +81,7 @@ def create_song(name: str, tones: str):
     else:
         print("Opus found for", tones)
 
-    return song_id
+    return item
 
 
 def get_opus(tones):

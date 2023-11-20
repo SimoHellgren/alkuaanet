@@ -53,8 +53,8 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def create_opus(self, tones: str) -> None:
-        crud.create_opus(tones.split("-"))
+    def add_song(self, name: str, tones: str) -> None:
+        crud.create_song(name, tones)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
