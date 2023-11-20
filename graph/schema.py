@@ -50,7 +50,14 @@ class Query:
     search: list[SearchResult] = strawberry.field(resolver=search)
 
 
-schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def create_opus(self, tones: str) -> None:
+        crud.create_opus(tones.split("-"))
+
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 app = GraphQL(schema)
 handler = Mangum(app)
