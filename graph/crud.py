@@ -1,6 +1,5 @@
 import json
 import boto3
-from io import StringIO
 
 dynamo = boto3.resource("dynamodb")
 
