@@ -84,6 +84,40 @@ def create_song(name: str, tones: str):
     return item
 
 
+def create_composer(first_name: str, last_name: str):
+    composer_id = get_next_id("composer")
+
+    name = ", ".join(filter(None, [last_name, first_name]))
+
+    item = {
+        "pk": composer_id,
+        "sk": "name:" + name.lower(),
+        "first_name": first_name,
+        "last_name": last_name,
+        "name": name,
+        "type": "composer",
+    }
+
+    composer = table.put_item(Item=item)
+
+    return item
+
+
+def add_membership(from_id, to_id):
+    to_item = get_by_pk(to_id, "name")["Items"][0]
+
+    item = {
+        "pk": from_id,
+        "sk": to_id,
+        "name": to_item["name"],
+        "type": "membership",
+    }
+
+    membership = table.put_item(Item=item)
+
+    return item
+
+
 def get_opus(tones):
     result = table.query(
         KeyConditionExpression=f"pk = :pk and sk = :sort_key",
