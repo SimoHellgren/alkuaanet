@@ -1,5 +1,6 @@
 import json
 import boto3
+from typing import Optional
 
 dynamo = boto3.resource("dynamodb")
 
@@ -38,6 +39,20 @@ def composer_exists(first_name: str, last_name: str) -> bool:
         KeyConditionExpression="#PK = :composer AND sk = :name",
         ExpressionAttributeNames={"#PK": "type"},
         ExpressionAttributeValues={":composer": "composer", ":name": "name:" + name},
+    )
+
+    return result["Count"] > 0
+
+
+def collection_exists(name: str) -> bool:
+    result = table.query(
+        IndexName="LookupIndex",
+        KeyConditionExpression="#PK = :collection AND sk = :name",
+        ExpressionAttributeNames={"#PK": "type"},
+        ExpressionAttributeValues={
+            ":collection": "collection",
+            ":name": "name:" + name.lower(),
+        },
     )
 
     return result["Count"] > 0
@@ -92,7 +107,27 @@ def create_composer(first_name: str, last_name: str):
     return item
 
 
-def create_song(name: str, tones: str, composer: dict = {}):
+def create_collection(name: str):
+    collection_id = get_next_id("collection")
+
+    item = {
+        "pk": collection_id,
+        "sk": "name:" + name.lower(),
+        "name": name,
+        "type": "collection",
+    }
+
+    collection = table.put_item(Item=item)
+
+    return item
+
+
+def create_song(
+    name: str,
+    tones: str,
+    composer: Optional[dict] = None,
+    collections: Optional[list[str]] = None,
+):
     song_id = get_next_id("song")
 
     item = {
@@ -125,6 +160,18 @@ def create_song(name: str, tones: str, composer: dict = {}):
             composer = search("composer", "name:" + search_name)["Items"][0]
 
         add_membership(composer["pk"], song_id)
+
+    if collections:
+        for collection_name in collections:
+            # create if needed
+            if not collection_exists(collection_name):
+                collection = create_collection(collection_name)
+            else:
+                collection = search("collection", "name:" + collection_name.lower())[
+                    "Items"
+                ][0]
+
+            add_membership(collection["pk"], song_id)
 
     return item
 
