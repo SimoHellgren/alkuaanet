@@ -1,6 +1,7 @@
 import json
 import boto3
 from typing import Optional
+from .hankkari import is_hankkari
 
 dynamo = boto3.resource("dynamodb")
 
@@ -172,6 +173,10 @@ def create_song(
                 ][0]
 
             add_membership(collection["pk"], song_id)
+
+    # add to hankkari if is hankkari
+    if is_hankkari(tones.split("-")):
+        add_membership("collection:7", song_id)
 
     return item
 
