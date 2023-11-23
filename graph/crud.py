@@ -30,6 +30,19 @@ def opus_exists(tones: str) -> bool:
     return result["Count"] > 0
 
 
+def composer_exists(first_name: str, last_name: str) -> bool:
+    name = ", ".join(filter(None, [last_name, first_name])).lower()
+
+    result = table.query(
+        IndexName="LookupIndex",
+        KeyConditionExpression="#PK = :composer AND sk = :name",
+        ExpressionAttributeNames={"#PK": "type"},
+        ExpressionAttributeValues={":composer": "composer", ":name": "name:" + name},
+    )
+
+    return result["Count"] > 0
+
+
 def get_by_pk(item_id: str, sort_key: str):
     """item_id example: song:1"""
     result = table.query(
@@ -60,7 +73,26 @@ def get_next_id(kind: str):
     return f"{kind}:{num}"
 
 
-def create_song(name: str, tones: str):
+def create_composer(first_name: str, last_name: str):
+    composer_id = get_next_id("composer")
+
+    name = ", ".join(filter(None, [last_name, first_name]))
+
+    item = {
+        "pk": composer_id,
+        "sk": "name:" + name.lower(),
+        "first_name": first_name,
+        "last_name": last_name,
+        "name": name,
+        "type": "composer",
+    }
+
+    composer = table.put_item(Item=item)
+
+    return item
+
+
+def create_song(name: str, tones: str, composer: dict = {}):
     song_id = get_next_id("song")
 
     item = {
@@ -80,24 +112,19 @@ def create_song(name: str, tones: str):
     else:
         print("Opus found for", tones)
 
-    return item
+    # assign composer
+    if composer:
+        first_name = composer.get("first_name")
+        last_name = composer.get("last_name")
+        # create if needed
+        if not composer_exists(first_name, last_name):
+            composer = create_composer(first_name, last_name)
 
+        else:
+            search_name = ", ".join(filter(None, [last_name, first_name])).lower()
+            composer = search("composer", "name:" + search_name)["Items"][0]
 
-def create_composer(first_name: str, last_name: str):
-    composer_id = get_next_id("composer")
-
-    name = ", ".join(filter(None, [last_name, first_name]))
-
-    item = {
-        "pk": composer_id,
-        "sk": "name:" + name.lower(),
-        "first_name": first_name,
-        "last_name": last_name,
-        "name": name,
-        "type": "composer",
-    }
-
-    composer = table.put_item(Item=item)
+        add_membership(composer["pk"], song_id)
 
     return item
 
