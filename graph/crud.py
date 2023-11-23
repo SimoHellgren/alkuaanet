@@ -1,7 +1,7 @@
 import json
 import boto3
 from typing import Optional
-from .hankkari import is_hankkari
+from hankkari import is_hankkari
 
 dynamo = boto3.resource("dynamodb")
 
