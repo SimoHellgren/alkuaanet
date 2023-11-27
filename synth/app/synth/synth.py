@@ -2,17 +2,21 @@
 from itertools import islice, tee, count, cycle
 import numpy as np
 from .notes import note_to_frequency
+from typing import TypeAlias, Callable
 
 take = lambda n, seq: islice(seq, 0, n)
 nwise = lambda seq, n=2: zip(*(islice(it, i, None) for i, it in enumerate(tee(seq, n))))
 
+Milliseconds: TypeAlias = int
+Sound: TypeAlias = Callable[[np.ndarray], np.ndarray]
 
-def sinewave(freq, amp):
+
+def sinewave(freq: float, amp: float) -> Sound:
     """return a function that produces a sinewave with a given frequency and amplitude"""
     return lambda xs: np.sin(2 * np.pi * freq * xs) * amp
 
 
-def sound(freq, amps):
+def sound(freq: float, amps: list[float]) -> Sound:
     """Given a basefrequency and an iterable of amplitudes in range [0,1],
     return a function that produces a compound sinewave of the basefrequency
     and its overtones
