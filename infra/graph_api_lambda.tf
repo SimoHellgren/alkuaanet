@@ -11,7 +11,8 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "dynamodb_access" {
+data "aws_iam_policy_document" "graph_api_accesses" {
+  # dynamodb
   statement {
     effect = "Allow"
     actions = [
@@ -29,6 +30,17 @@ data "aws_iam_policy_document" "dynamodb_access" {
     ]
   }
 
+  # synth
+  statement {
+    effect = "Allow"
+    actions = [
+      "lambda:InvokeFunction"
+    ]
+    resources = [
+      aws_lambda_function.alkuaanet-synth-lambda.arn
+    ]
+  }
+
   # logging
   statement {
     effect = "Allow"
@@ -42,7 +54,7 @@ data "aws_iam_policy_document" "dynamodb_access" {
 
 resource "aws_iam_policy" "dynamodb_policy" {
   name   = "DynamoDB-policy"
-  policy = data.aws_iam_policy_document.dynamodb_access.json
+  policy = data.aws_iam_policy_document.graph_api_accesses.json
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
