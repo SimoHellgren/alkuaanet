@@ -11,7 +11,7 @@ data "aws_iam_policy_document" "assume_role" {
   }
 }
 
-data "aws_iam_policy_document" "graph_api_accesses" {
+data "aws_iam_policy_document" "alkuaanet_accesses" {
   # dynamodb
   statement {
     effect = "Allow"
@@ -41,6 +41,18 @@ data "aws_iam_policy_document" "graph_api_accesses" {
     ]
   }
 
+  # ssm
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:GetParameter",
+      "ssm:GetParameters"
+    ]
+    resources = [
+      aws_ssm_parameter.telegram_bot_token.arn
+    ]
+  }
+
   # logging
   statement {
     effect = "Allow"
@@ -48,13 +60,13 @@ data "aws_iam_policy_document" "graph_api_accesses" {
       "logs:CreateLogStream",
       "logs:PutLogEvents"
     ]
-    resources = ["arn:aws:logs:*:*:*"] # might this be problematic?
+    resources = ["arn:aws:logs:*:*:*"]
   }
 }
 
-resource "aws_iam_policy" "dynamodb_policy" {
-  name   = "DynamoDB-policy"
-  policy = data.aws_iam_policy_document.graph_api_accesses.json
+resource "aws_iam_policy" "alkuaanet_policy" {
+  name   = "Alkuaanet-Policy"
+  policy = data.aws_iam_policy_document.alkuaanet_accesses.json
 }
 
 resource "aws_iam_role" "iam_for_lambda" {
@@ -62,9 +74,9 @@ resource "aws_iam_role" "iam_for_lambda" {
   assume_role_policy = data.aws_iam_policy_document.assume_role.json
 }
 
-resource "aws_iam_role_policy_attachment" "graph_api_lambda_iam_attachment" {
+resource "aws_iam_role_policy_attachment" "alkuaanet_lambda_policy_attachment" {
   role       = aws_iam_role.iam_for_lambda.name
-  policy_arn = aws_iam_policy.dynamodb_policy.arn
+  policy_arn = aws_iam_policy.alkuaanet_policy.arn
 }
 
 data "archive_file" "graph_api_lambda_payload" {

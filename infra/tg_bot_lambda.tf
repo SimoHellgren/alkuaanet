@@ -36,31 +36,12 @@ resource "aws_cloudwatch_log_group" "telegram_bot_log_group" {
   }
 }
 
-data "aws_iam_policy_document" "telegram_bot_accesses" {
-  # ssm
-  statement {
-    effect = "Allow"
-    actions = [
-      "ssm:GetParameter",
-      "ssm:GetParameters"
-    ]
-    resources = [
-      "arn:aws:ssm:eu-west-1:896979235420:parameter/alkuaanet-telegram-bot-token"
-    ]
+resource "aws_ssm_parameter" "telegram_bot_token" {
+  name  = "alkuaanet-telegram-bot-token"
+  type  = "SecureString"
+  value = " "
+
+  lifecycle {
+    ignore_changes = [value]
   }
-}
-
-resource "aws_iam_policy" "telegram_bot_policy" {
-  name   = "telegram-bot-policy"
-  policy = data.aws_iam_policy_document.telegram_bot_accesses.json
-}
-
-resource "aws_iam_role" "telegram_bot_role" {
-  name               = "telegram-bot-role"
-  assume_role_policy = data.aws_iam_policy_document.assume_role.json
-}
-
-resource "aws_iam_role_policy_attachment" "telegram_bot_role_attachment" {
-  role       = aws_iam_role.telegram_bot_role.name
-  policy_arn = aws_iam_policy.telegram_bot_policy.arn
 }
