@@ -32,8 +32,8 @@ def triangle_wave(n: int):
     # produce amplitudes with decay in amplitude
     amplitudes = (1 / np.power(e, 1.1) for e in count(1))
 
-    # only take every other harmonic
-    every_other = compress(amplitudes, cycle((1, 0)))
+    # only every other harmonic should have a non-zero amplitude
+    every_other = (a * b for a, b in zip(amplitudes, cycle([1, 0])))
 
     # return the first n amplitudes
     return tuple(take(n, every_other))
