@@ -60,14 +60,14 @@ collection_exists = partial(exists, "collection")
 composer_exists = partial(exists, "composer")
 
 
-def get_by_pk(item_id: str, sort_key: str):
+def get_by_pk(item_id: str, sort_key: str) -> list[dict]:
     """item_id example: song:1"""
     result = table.query(
         KeyConditionExpression=f"pk = :id and begins_with(sk, :sort_key)",
         ExpressionAttributeValues={":id": item_id, ":sort_key": sort_key},
     )
 
-    return result
+    return result["Items"]
 
 
 def get_next_id(kind: str):
@@ -178,7 +178,7 @@ def create_song(
 
 
 def add_membership(from_id, to_id):
-    to_item = get_by_pk(to_id, "name")["Items"][0]
+    to_item = get_by_pk(to_id, "name")[0]
 
     item = {
         "pk": from_id,
