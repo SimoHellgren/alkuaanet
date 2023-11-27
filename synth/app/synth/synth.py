@@ -9,6 +9,7 @@ nwise = lambda seq, n=2: zip(*(islice(it, i, None) for i, it in enumerate(tee(se
 
 Milliseconds: TypeAlias = int
 Sound: TypeAlias = Callable[[np.ndarray[Milliseconds]], np.ndarray]
+Volume: TypeAlias = float
 
 
 def sinewave(freq: float, amp: float) -> Sound:
@@ -48,7 +49,7 @@ def adsr(
     decay: Milliseconds,
     sustain: float,
     release: Milliseconds,
-):
+) -> Volume:
     """Simple ADSR envelope. Produces a volume according to the parameters given,
     when the input is in the range [0, duration], otherwise 0 (off).
     Sustain is a float in range [0, 1] that determines the volume after the attack and decay phases.
@@ -67,7 +68,9 @@ def adsr(
     )
 
 
-def arpeggio(notes: list[str], note_duration: Milliseconds, offset: Milliseconds):
+def arpeggio(
+    notes: list[str], note_duration: Milliseconds, offset: Milliseconds, sound: Sound
+):
     """Produces a list of notes and times at which they should be played."""
 
     # get the total duration by calculating when the last note starts and adding note_duration
@@ -76,24 +79,22 @@ def arpeggio(notes: list[str], note_duration: Milliseconds, offset: Milliseconds
     duration = (n - 1) * offset + note_duration + 250
 
     frequencies = map(note_to_frequency, notes)
-    sounds = map(triangle_wave(5), frequencies)
+    sounds = map(sound, frequencies)
 
     result = lambda xs: (
-        sound(xs) * adsr(note_duration, 90, 50, 0.8, 25)(xs - i * offset)
-        for i, sound in enumerate(sounds)
+        s(xs) * adsr(note_duration, 90, 50, 0.8, 25)(xs - i * offset)
+        for i, s in enumerate(sounds)
     )
 
     return lambda xs: np.sum(result(xs), 0), duration
 
 
-def chord(notes: list[str], duration: Milliseconds):
+def chord(notes: list[str], duration: Milliseconds, sound: Sound):
     total_duration = duration + 250
     frequencies = map(note_to_frequency, notes)
-    sounds = map(triangle_wave(5), frequencies)
+    sounds = map(sound, frequencies)
 
-    result = lambda xs: (
-        sound(xs) * adsr(duration, 90, 50, 0.8, 25)(xs) for sound in sounds
-    )
+    result = lambda xs: (s(xs) * adsr(duration, 90, 50, 0.8, 25)(xs) for s in sounds)
 
     return lambda xs: np.sum(result(xs), 0), total_duration
 
