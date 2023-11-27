@@ -14,9 +14,9 @@ lambdafunc = boto3.client("lambda")
 def composer_lookup_name(first_name: str, last_name: str):
     """Turns first and last name into a search string.
 
-    Example: "Jean Sibelius" -> "sibelius, jean".
+    Example: "Jean Sibelius" -> "Sibelius, Jean".
     """
-    return ", ".join(filter(None, [last_name, first_name])).lower()
+    return ", ".join(filter(None, [last_name, first_name]))
 
 
 def search(kind: str, string: str) -> list[dict]:
@@ -155,7 +155,7 @@ def create_song(
         last_name = composer.get("last_name")
         lookup_name = composer_lookup_name(first_name, last_name)
 
-        composer = lookup("composer", "name:" + lookup_name) or create_composer(
+        composer = lookup("composer", "name:" + lookup_name.lower()) or create_composer(
             first_name, last_name
         )
 
