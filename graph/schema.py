@@ -23,17 +23,17 @@ class Song:
 
 
 def search(kind: str, string: str) -> list[SearchResult]:
-    data = crud.search(kind, f"name:{string}")["Items"]
+    data = crud.search(kind, f"name:{string.lower()}")
     return [SearchResult.from_db(datum) for datum in data]
 
 
 def get_items(pk: str, sk: str):
-    data = crud.get_by_pk(pk, sk)["Items"]
+    data = crud.get_by_pk(pk, sk)
     return [SearchResult(id=datum["sk"], name=datum["name"]) for datum in data]
 
 
 def get_song(song_id: str):
-    data = crud.get_by_pk(song_id, "name")["Items"][0]
+    data = crud.get_by_pk(song_id, "name")[0]
     opus = crud.get_opus(data["tones"])
     return Song(
         id=data["pk"],
