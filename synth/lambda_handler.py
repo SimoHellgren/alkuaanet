@@ -1,6 +1,6 @@
 from base64 import b64encode
 import json
-from app.synth import make_opus_blob
+from app.synth.writers import make_opus_blob
 
 
 def handler(event, context):
