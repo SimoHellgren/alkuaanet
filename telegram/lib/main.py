@@ -2,9 +2,13 @@ import telepot
 from telepot.helper import Router
 from telepot.namedtuple import InlineKeyboardButton, InlineKeyboardMarkup
 from . import service as graph
-import os
+import boto3
 
-token = os.environ["BOT_TOKEN"]
+ssm = boto3.client("ssm")
+token_param = ssm.get_parameter(
+    Name="alkuaanet-telegram-bot-token", WithDecryption=True
+)
+token = token_param["Parameter"]["Value"]
 
 bot = telepot.Bot(token)
 
