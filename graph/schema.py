@@ -25,7 +25,7 @@ class Song:
 
 @strawberry.input
 class ComposerInput:
-    first_name: str
+    first_name: Optional[str] = None
     last_name: str
 
     def to_dict(self):
@@ -78,6 +78,14 @@ class Mutation:
             song.composer.to_dict(),
             song.collections,
         )
+
+    @strawberry.mutation
+    def add_composer(self, composer: ComposerInput) -> None:
+        crud.create_composer(composer.first_name, composer.last_name)
+
+    @strawberry.mutation
+    def add_collection(self, name: str) -> None:
+        crud.create_collection(name)
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
