@@ -75,7 +75,7 @@ class Mutation:
         crud.create_song(
             song.name,
             song.tones,
-            song.composer.to_dict(),
+            song.composer.to_dict() if song.composer else None,
             song.collections,
         )
 
