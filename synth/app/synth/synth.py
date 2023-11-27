@@ -44,6 +44,7 @@ def triangle_wave(n: int) -> Sound:
 
 
 def adsr(
+    start_at: Milliseconds,
     duration: Milliseconds,
     attack: Milliseconds,
     decay: Milliseconds,
@@ -51,12 +52,13 @@ def adsr(
     release: Milliseconds,
 ) -> Volume:
     """Simple ADSR envelope. Produces a volume according to the parameters given,
-    when the input is in the range [0, duration], otherwise 0 (off).
-    In order to produce sounds from time t, the input must be shifted by t.
+    when the input is in the range [start_at, start_at + duration], otherwise 0 (off).
     Sustain is a float in range [0, 1] that determines the volume after the attack and decay phases.
     """
+    # basic logic assumes that start_at is 0 - input is later shifted accordingly
     # increase volume linearly from 0 to 1 for `attack` milliseconds
     a = lambda x: 1 / attack * x
+
     # decrease volume linearly from 1 to `sustain` for `decay` milliseconds
     d = lambda x: (sustain - 1) / decay * (x - attack) + 1
 
@@ -70,8 +72,11 @@ def adsr(
     limits = np.array([0, attack, attack + decay, duration - release, duration])
     pairs = list(nwise(limits))
 
+    # input is shifted here to account for start_at
     return lambda xs: np.piecewise(
-        xs, [(xs >= s) & (xs < e) for s, e in pairs], [a, d, s, r, default]
+        xs - start_at,
+        [(xs - start_at >= s) & (xs - start_at < e) for s, e in pairs],
+        [a, d, s, r, default],
     )
 
 
@@ -87,10 +92,9 @@ def arpeggio(
     frequencies = map(note_to_frequency, notes)
     sounds = map(sound, frequencies)
 
-    result = lambda xs: (
-        s(xs) * adsr(note_duration, 90, 50, 0.8, 25)(xs - i * offset)
-        for i, s in enumerate(sounds)
-    )
+    envelopes = (adsr(i * offset, note_duration, 90, 50, 0.8, 25) for i in range(n))
+
+    result = lambda xs: (s(xs) * envelope(xs) for s, envelope in zip(sounds, envelopes))
 
     return lambda xs: np.sum(result(xs), 0), duration
 
@@ -99,7 +103,7 @@ def chord(notes: list[str], duration: Milliseconds, sound: Sound):
     frequencies = map(note_to_frequency, notes)
     sounds = map(sound, frequencies)
 
-    result = lambda xs: (s(xs) * adsr(duration, 90, 50, 0.8, 25)(xs) for s in sounds)
+    result = lambda xs: (s(xs) * adsr(0, duration, 90, 50, 0.8, 25)(xs) for s in sounds)
 
     return lambda xs: np.sum(result(xs), 0), duration
 
