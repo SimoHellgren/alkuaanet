@@ -19,7 +19,12 @@ def composer_lookup_name(first_name: str, last_name: str):
     return ", ".join(filter(None, [last_name, first_name])).lower()
 
 
-def search(kind: str, string: str):
+def search(kind: str, string: str) -> list[dict]:
+    """Searches for records of a given kind (e.g. song, composer, collection),
+    and returns a list of matching items.
+
+    Query string matches the beginning of the sort key.
+    """
     result = table.query(
         IndexName="LookupIndex",
         KeyConditionExpression="#PK = :kind AND begins_with(sk, :s)",
@@ -27,10 +32,14 @@ def search(kind: str, string: str):
         ExpressionAttributeValues={":kind": kind, ":s": string},
     )
 
-    return result
+    return result["Items"]
 
 
-def lookup(kind: str, sort_key: str):
+def lookup(kind: str, sort_key: str) -> Optional[dict]:
+    """Looks up a single item by kind and sort key.
+
+    Sort key must match exactly.
+    """
     result = table.query(
         IndexName="LookupIndex",
         KeyConditionExpression="#PK = :kind AND sk = :sk",
@@ -38,10 +47,13 @@ def lookup(kind: str, sort_key: str):
         ExpressionAttributeValues={":kind": kind, ":sk": sort_key},
     )
 
-    return result
+    if result["Count"]:
+        return result["Items"][0]
+
+    return None
 
 
-exists: bool = lambda kind, sort_key: lookup(kind, sort_key)["Count"] > 0
+exists: bool = lambda kind, sort_key: bool(lookup(kind, sort_key))
 
 opus_exists = partial(exists, "opus")
 collection_exists = partial(exists, "collection")
@@ -137,30 +149,24 @@ def create_song(
     else:
         print("Opus found for", tones)
 
-    # assign composer
+    # assign composer, creating if needed
     if composer:
         first_name = composer.get("first_name")
         last_name = composer.get("last_name")
         lookup_name = composer_lookup_name(first_name, last_name)
 
-        # create if needed
-        if not composer_exists("name:" + lookup_name):
-            composer = create_composer(first_name, last_name)
-
-        else:
-            composer = search("composer", "name:" + lookup_name)["Items"][0]
+        composer = lookup("composer", "name:" + lookup_name) or create_composer(
+            first_name, last_name
+        )
 
         add_membership(composer["pk"], song_id)
 
+    # add to collections, creating if needed
     if collections:
         for collection_name in collections:
-            # create if needed
-            if not collection_exists(collection_name):
-                collection = create_collection(collection_name)
-            else:
-                collection = search("collection", "name:" + collection_name.lower())[
-                    "Items"
-                ][0]
+            collection = lookup(
+                "collection", "name:" + collection_name.lower()
+            ) or create_collection(collection_name)
 
             add_membership(collection["pk"], song_id)
 
