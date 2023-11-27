@@ -8,12 +8,14 @@ take = lambda n, seq: islice(seq, 0, n)
 nwise = lambda seq, n=2: zip(*(islice(it, i, None) for i, it in enumerate(tee(seq, n))))
 
 Milliseconds: TypeAlias = int
-Sound: TypeAlias = Callable[[np.ndarray], np.ndarray]
+Sound: TypeAlias = Callable[[np.ndarray[Milliseconds]], np.ndarray]
 
 
 def sinewave(freq: float, amp: float) -> Sound:
-    """return a function that produces a sinewave with a given frequency and amplitude"""
-    return lambda xs: np.sin(2 * np.pi * freq * xs) * amp
+    """return a function that produces a sinewave with a given frequency and amplitude.
+    The returned function takes an array of time values in milliseconds as input.
+    """
+    return lambda xs: np.sin(2 * np.pi * freq * xs / 1000) * amp
 
 
 def sound(freq: float, amps: list[float]) -> Sound:
@@ -36,17 +38,20 @@ def adsr(duration, attack, decay, sustain, release):
     r = lambda x: sustain - 1 / release * (x - duration + release - 1)
     default = lambda x: 0
 
-    limits = map(
-        lambda x: x / 1000, [0, attack, attack + decay, duration - release, duration]
-    )
+    limits = map(lambda x: x, [0, attack, attack + decay, duration - release, duration])
     pairs = list(nwise(limits))
 
     return lambda xs: np.piecewise(
-        xs * 1000, [(xs >= s) & (xs < e) for s, e in pairs], [a, d, s, r, default]
+        xs, [(xs >= s) & (xs < e) for s, e in pairs], [a, d, s, r, default]
     )
 
 
-def play_sequence(notes, note_duration, offset, sample_rate=44100):
+def play_sequence(
+    notes: list[str],
+    note_duration: Milliseconds,
+    offset: Milliseconds,
+    sample_rate=44100,
+):
     """Creates a compound wave that plays given notes one after the other, starting at 'offset' intervals
     Applies a default sound. Timings are controlled by applying ADSR-envelopes and shifting the input
     in such a way that each note plays at the desired time. Resulting array is scaled such that values are
@@ -58,9 +63,9 @@ def play_sequence(notes, note_duration, offset, sample_rate=44100):
 
     # get the total duration by calculating when the last note starts and adding note_duration
     # also add .25s to avoid excessive popping noise at the end
-    duration = (n - 1) * offset + note_duration + 0.25
+    duration = (n - 1) * offset + note_duration + 250
 
-    xs = np.linspace(0, duration, int(duration * sample_rate))
+    xs = np.linspace(0, duration, int(duration * sample_rate / 1000))
 
     fs = map(note_to_frequency, notes)
 
@@ -70,7 +75,7 @@ def play_sequence(notes, note_duration, offset, sample_rate=44100):
 
     sounds = [sound(f, pattern) for f in fs]
 
-    envelope = adsr(note_duration * 1000, 90, 50, 0.8, 25)
+    envelope = adsr(note_duration, 90, 50, 0.8, 25)
 
     samples = np.sum(
         [s(xs) * envelope(xs - i * offset) for i, s in enumerate(sounds)], 0
