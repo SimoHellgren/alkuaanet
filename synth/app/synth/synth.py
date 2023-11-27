@@ -28,15 +28,18 @@ def sound(freq: float, amps: list[float]) -> Sound:
     return lambda xs: np.sum([f(xs) for f in funcs], 0)
 
 
-def triangle_wave(n: int):
+def triangle_wave(n: int) -> Sound:
     # produce amplitudes with decay in amplitude
     amplitudes = (1 / np.power(e, 1.1) for e in count(1))
 
     # only every other harmonic should have a non-zero amplitude
     every_other = (a * b for a, b in zip(amplitudes, cycle([1, 0])))
 
+    # coerce to list here, otherwise subsequent calls will use the same generator
+    amplitudes = list(take(n, every_other))
+
     # return the first n amplitudes
-    return tuple(take(n, every_other))
+    return lambda f: sound(f, amplitudes)
 
 
 def adsr(
@@ -64,7 +67,23 @@ def adsr(
     )
 
 
-basic_adsr = adsr(1000, 90, 50, 0.8, 25)
+def arpeggio(notes: list[str], note_duration: Milliseconds, offset: Milliseconds):
+    """Produces a list of notes and times at which they should be played."""
+
+    # get the total duration by calculating when the last note starts and adding note_duration
+    # also add .25s to avoid excessive popping noise at the end
+    n = len(notes)
+    duration = (n - 1) * offset + note_duration + 250
+
+    frequencies = map(note_to_frequency, notes)
+    sounds = map(triangle_wave(5), frequencies)
+
+    result = lambda xs: (
+        sound(xs) * adsr(note_duration, 90, 50, 0.8, 25)(xs - i * offset)
+        for i, sound in enumerate(sounds)
+    )
+
+    return lambda xs: np.sum(result(xs), 0), duration
 
 
 def play_sequence(
@@ -72,32 +91,14 @@ def play_sequence(
     note_duration: Milliseconds,
     offset: Milliseconds,
     sample_rate=44100,
-    pattern=triangle_wave,
-    envelope=basic_adsr,
 ):
-    """Creates a compound wave that plays given notes one after the other, starting at 'offset' intervals
-    Applies a default sound. Timings are controlled by applying ADSR-envelopes and shifting the input
-    in such a way that each note plays at the desired time. Resulting array is scaled such that values are
+    """Creates a compound wave of given notes. Sound array is scaled such that values are
     in range [-1, 1], so it can be directly passed on to a writer function.
-
-    NB: at least sound and envelope should be refactored / extracted to be parameters to this function
     """
-    n = len(notes)
 
-    # get the total duration by calculating when the last note starts and adding note_duration
-    # also add .25s to avoid excessive popping noise at the end
-    duration = (n - 1) * offset + note_duration + 250
-
+    sound_func, duration = arpeggio(notes, note_duration, offset)
     xs = np.linspace(0, duration, int(duration * sample_rate / 1000))
 
-    fs = map(note_to_frequency, notes)
-
-    sounds = [sound(f, pattern(5)) for f in fs]
-
-    samples = np.sum(
-        [s(xs) * envelope(xs - i * offset) for i, s in enumerate(sounds)], 0
-    )
-
+    samples = sound_func(xs)
     scaled = samples / np.abs(samples).max()
-
     return scaled
