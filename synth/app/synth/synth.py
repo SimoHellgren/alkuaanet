@@ -64,12 +64,16 @@ def adsr(
     )
 
 
+basic_adsr = adsr(1000, 90, 50, 0.8, 25)
+
+
 def play_sequence(
     notes: list[str],
     note_duration: Milliseconds,
     offset: Milliseconds,
     sample_rate=44100,
     pattern=triangle_wave,
+    envelope=basic_adsr,
 ):
     """Creates a compound wave that plays given notes one after the other, starting at 'offset' intervals
     Applies a default sound. Timings are controlled by applying ADSR-envelopes and shifting the input
@@ -89,8 +93,6 @@ def play_sequence(
     fs = map(note_to_frequency, notes)
 
     sounds = [sound(f, pattern(5)) for f in fs]
-
-    envelope = adsr(note_duration, 90, 50, 0.8, 25)
 
     samples = np.sum(
         [s(xs) * envelope(xs - i * offset) for i, s in enumerate(sounds)], 0
