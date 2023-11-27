@@ -1,5 +1,5 @@
 """sound generation happens here"""
-from itertools import islice, tee, count, cycle
+from itertools import islice, tee, count, cycle, compress
 import numpy as np
 from .notes import note_to_frequency
 from typing import TypeAlias, Callable
@@ -26,6 +26,17 @@ def sound(freq: float, amps: list[float]) -> Sound:
     funcs = [sinewave(freq * i, amp) for i, amp in enumerate(amps, 1)]
 
     return lambda xs: np.sum([f(xs) for f in funcs], 0)
+
+
+def triangle_wave(n: int):
+    # produce amplitudes with decay in amplitude
+    amplitudes = (1 / np.power(e, 1.1) for e in count(1))
+
+    # only take every other harmonic
+    every_other = compress(amplitudes, cycle((1, 0)))
+
+    # return the first n amplitudes
+    return tuple(take(n, every_other))
 
 
 def adsr(
@@ -58,6 +69,7 @@ def play_sequence(
     note_duration: Milliseconds,
     offset: Milliseconds,
     sample_rate=44100,
+    pattern=triangle_wave,
 ):
     """Creates a compound wave that plays given notes one after the other, starting at 'offset' intervals
     Applies a default sound. Timings are controlled by applying ADSR-envelopes and shifting the input
@@ -76,11 +88,7 @@ def play_sequence(
 
     fs = map(note_to_frequency, notes)
 
-    # produce reciprocal amplitudes to generate sounds
-    amps = (1 / np.power(e, 1.1) for e in count(1))
-    pattern = tuple(take(10, (a * b for a, b in zip(amps, cycle((1, 0))))))
-
-    sounds = [sound(f, pattern) for f in fs]
+    sounds = [sound(f, pattern(5)) for f in fs]
 
     envelope = adsr(note_duration, 90, 50, 0.8, 25)
 
