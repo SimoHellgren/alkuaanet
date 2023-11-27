@@ -52,15 +52,22 @@ def adsr(
 ) -> Volume:
     """Simple ADSR envelope. Produces a volume according to the parameters given,
     when the input is in the range [0, duration], otherwise 0 (off).
+    In order to produce sounds from time t, the input must be shifted by t.
     Sustain is a float in range [0, 1] that determines the volume after the attack and decay phases.
     """
+    # increase volume linearly from 0 to 1 for `attack` milliseconds
     a = lambda x: 1 / attack * x
+    # decrease volume linearly from 1 to `sustain` for `decay` milliseconds
     d = lambda x: (sustain - 1) / decay * (x - attack) + 1
+
+    # sustain volume until `release` milliseconds before end of note
     s = lambda x: sustain
+
+    # decrease volume to 0 for `release` milliseconds
     r = lambda x: sustain - 1 / release * (x - duration + release - 1)
     default = lambda x: 0
 
-    limits = map(lambda x: x, [0, attack, attack + decay, duration - release, duration])
+    limits = np.array([0, attack, attack + decay, duration - release, duration])
     pairs = list(nwise(limits))
 
     return lambda xs: np.piecewise(
