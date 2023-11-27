@@ -28,9 +28,16 @@ def sound(freq: float, amps: list[float]) -> Sound:
     return lambda xs: np.sum([f(xs) for f in funcs], 0)
 
 
-def adsr(duration, attack, decay, sustain, release):
+def adsr(
+    duration: Milliseconds,
+    attack: Milliseconds,
+    decay: Milliseconds,
+    sustain: float,
+    release: Milliseconds,
+):
     """Simple ADSR envelope. Produces a volume according to the parameters given,
     when the input is in the range [0, duration], otherwise 0 (off).
+    Sustain is a float in range [0, 1] that determines the volume after the attack and decay phases.
     """
     a = lambda x: 1 / attack * x
     d = lambda x: (sustain - 1) / decay * (x - attack) + 1
