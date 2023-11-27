@@ -1,5 +1,5 @@
 """sound generation happens here"""
-from itertools import islice, tee, count, cycle, compress
+from itertools import islice, tee, count, cycle
 import numpy as np
 from .notes import note_to_frequency
 from typing import TypeAlias, Callable
