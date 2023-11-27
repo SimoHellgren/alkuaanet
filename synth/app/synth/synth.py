@@ -86,19 +86,28 @@ def arpeggio(notes: list[str], note_duration: Milliseconds, offset: Milliseconds
     return lambda xs: np.sum(result(xs), 0), duration
 
 
-def play_sequence(
-    notes: list[str],
-    note_duration: Milliseconds,
-    offset: Milliseconds,
+def chord(notes: list[str], duration: Milliseconds):
+    total_duration = duration + 250
+    frequencies = map(note_to_frequency, notes)
+    sounds = map(triangle_wave(5), frequencies)
+
+    result = lambda xs: (
+        sound(xs) * adsr(duration, 90, 50, 0.8, 25)(xs) for sound in sounds
+    )
+
+    return lambda xs: np.sum(result(xs), 0), total_duration
+
+
+def combine(
+    sound,
+    duration,
     sample_rate=44100,
 ):
-    """Creates a compound wave of given notes. Sound array is scaled such that values are
+    """Creates a compound wave of given sounds. Sound array is scaled such that values are
     in range [-1, 1], so it can be directly passed on to a writer function.
     """
-
-    sound_func, duration = arpeggio(notes, note_duration, offset)
     xs = np.linspace(0, duration, int(duration * sample_rate / 1000))
 
-    samples = sound_func(xs)
+    samples = sound(xs)
     scaled = samples / np.abs(samples).max()
     return scaled
