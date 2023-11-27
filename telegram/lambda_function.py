@@ -11,4 +11,8 @@ def handler(event, context):
     elif "callback_query" in data:
         kind = "callback_query"
 
-    bot.handle(data[kind])
+    else:
+        kind = None
+
+    if kind:
+        bot.handle(data[kind])

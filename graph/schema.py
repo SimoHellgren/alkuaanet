@@ -2,6 +2,7 @@ import strawberry
 from strawberry.asgi import GraphQL
 import crud
 from mangum import Mangum
+from typing import Optional
 
 
 @strawberry.type
@@ -22,18 +23,35 @@ class Song:
     opus: str
 
 
+@strawberry.input
+class ComposerInput:
+    first_name: Optional[str] = None
+    last_name: str
+
+    def to_dict(self):
+        return {"first_name": self.first_name, "last_name": self.last_name}
+
+
+@strawberry.input
+class SongInput:
+    name: str
+    tones: str
+    composer: Optional[ComposerInput] = None
+    collections: Optional[list[str]] = None
+
+
 def search(kind: str, string: str) -> list[SearchResult]:
-    data = crud.search(kind, f"name:{string}")["Items"]
+    data = crud.search(kind, f"name:{string.lower()}")
     return [SearchResult.from_db(datum) for datum in data]
 
 
 def get_items(pk: str, sk: str):
-    data = crud.get_by_pk(pk, sk)["Items"]
+    data = crud.get_by_pk(pk, sk)
     return [SearchResult(id=datum["sk"], name=datum["name"]) for datum in data]
 
 
 def get_song(song_id: str):
-    data = crud.get_by_pk(song_id, "name")["Items"][0]
+    data = crud.get_by_pk(song_id, "name")[0]
     opus = crud.get_opus(data["tones"])
     return Song(
         id=data["pk"],
@@ -50,7 +68,27 @@ class Query:
     search: list[SearchResult] = strawberry.field(resolver=search)
 
 
-schema = strawberry.Schema(query=Query)
+@strawberry.type
+class Mutation:
+    @strawberry.mutation
+    def add_song(self, song: SongInput) -> None:
+        crud.create_song(
+            song.name,
+            song.tones,
+            song.composer.to_dict(),
+            song.collections,
+        )
+
+    @strawberry.mutation
+    def add_composer(self, composer: ComposerInput) -> None:
+        crud.create_composer(composer.first_name, composer.last_name)
+
+    @strawberry.mutation
+    def add_collection(self, name: str) -> None:
+        crud.create_collection(name)
+
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)
 
 app = GraphQL(schema)
 handler = Mangum(app)
