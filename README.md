@@ -4,4 +4,6 @@ Starting notes of songs. A Telegram bot calling a GraphQL API sitting on top of 
 
 Lambda layers are not automatically built.
 
-You'll need to manually set the BOT_TOKEN as well as Telegram's webhook for the bot lambda function.
+Manual steps:
+1. Store the Telegram bot's token in SSM after it has been created (by terraform)
+2. Set up a [webhook](https://core.telegram.org/bots/api#setwebhook) to the bot's function url
