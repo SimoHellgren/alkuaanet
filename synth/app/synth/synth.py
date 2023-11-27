@@ -73,10 +73,9 @@ def arpeggio(
 ):
     """Produces a list of notes and times at which they should be played."""
 
-    # get the total duration by calculating when the last note starts and adding note_duration
-    # also add .25s to avoid excessive popping noise at the end
+    # total duration = last note starttime + note duration
     n = len(notes)
-    duration = (n - 1) * offset + note_duration + 250
+    duration = (n - 1) * offset + note_duration
 
     frequencies = map(note_to_frequency, notes)
     sounds = map(sound, frequencies)
@@ -90,24 +89,25 @@ def arpeggio(
 
 
 def chord(notes: list[str], duration: Milliseconds, sound: Sound):
-    total_duration = duration + 250
     frequencies = map(note_to_frequency, notes)
     sounds = map(sound, frequencies)
 
     result = lambda xs: (s(xs) * adsr(duration, 90, 50, 0.8, 25)(xs) for s in sounds)
 
-    return lambda xs: np.sum(result(xs), 0), total_duration
+    return lambda xs: np.sum(result(xs), 0), duration
 
 
 def combine(
     sound,
-    duration,
+    duration: Milliseconds,
     sample_rate=44100,
 ):
     """Creates a compound wave of given sounds. Sound array is scaled such that values are
     in range [-1, 1], so it can be directly passed on to a writer function.
     """
-    xs = np.linspace(0, duration, int(duration * sample_rate / 1000))
+    # add 250ms to duration to avoid popping noise at the end
+    total_duration = duration + 250
+    xs = np.linspace(0, total_duration, int(total_duration * sample_rate / 1000))
 
     samples = sound(xs)
     scaled = samples / np.abs(samples).max()
