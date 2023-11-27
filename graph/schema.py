@@ -2,6 +2,7 @@ import strawberry
 from strawberry.asgi import GraphQL
 import crud
 from mangum import Mangum
+from typing import Optional
 
 
 @strawberry.type
@@ -20,6 +21,23 @@ class Song:
     name: str
     tones: str
     opus: str
+
+
+@strawberry.input
+class ComposerInput:
+    first_name: str
+    last_name: str
+
+    def to_dict(self):
+        return {"first_name": self.first_name, "last_name": self.last_name}
+
+
+@strawberry.input
+class SongInput:
+    name: str
+    tones: str
+    composer: Optional[ComposerInput] = None
+    collections: Optional[list[str]] = None
 
 
 def search(kind: str, string: str) -> list[SearchResult]:
@@ -53,8 +71,13 @@ class Query:
 @strawberry.type
 class Mutation:
     @strawberry.mutation
-    def add_song(self, name: str, tones: str) -> None:
-        crud.create_song(name, tones)
+    def add_song(self, song: SongInput) -> None:
+        crud.create_song(
+            song.name,
+            song.tones,
+            song.composer.to_dict(),
+            song.collections,
+        )
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
