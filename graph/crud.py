@@ -2,12 +2,21 @@ import json
 import boto3
 from typing import Optional
 from hankkari import is_hankkari
+from functools import partial
 
 dynamo = boto3.resource("dynamodb")
 
 table = dynamo.Table("songs")
 
 lambdafunc = boto3.client("lambda")
+
+
+def composer_lookup_name(first_name: str, last_name: str):
+    """Turns first and last name into a search string.
+
+    Example: "Jean Sibelius" -> "sibelius, jean".
+    """
+    return ", ".join(filter(None, [last_name, first_name])).lower()
 
 
 def search(kind: str, string: str):
@@ -21,42 +30,22 @@ def search(kind: str, string: str):
     return result
 
 
-def opus_exists(tones: str) -> bool:
+def lookup(kind: str, sort_key: str):
     result = table.query(
         IndexName="LookupIndex",
-        KeyConditionExpression="#PK = :opus AND sk = :tones",
+        KeyConditionExpression="#PK = :kind AND sk = :sk",
         ExpressionAttributeNames={"#PK": "type"},
-        ExpressionAttributeValues={":opus": "opus", ":tones": tones},
+        ExpressionAttributeValues={":kind": kind, ":sk": sort_key},
     )
 
-    return result["Count"] > 0
+    return result
 
 
-def composer_exists(first_name: str, last_name: str) -> bool:
-    name = ", ".join(filter(None, [last_name, first_name])).lower()
+exists: bool = lambda kind, sort_key: lookup(kind, sort_key)["Count"] > 0
 
-    result = table.query(
-        IndexName="LookupIndex",
-        KeyConditionExpression="#PK = :composer AND sk = :name",
-        ExpressionAttributeNames={"#PK": "type"},
-        ExpressionAttributeValues={":composer": "composer", ":name": "name:" + name},
-    )
-
-    return result["Count"] > 0
-
-
-def collection_exists(name: str) -> bool:
-    result = table.query(
-        IndexName="LookupIndex",
-        KeyConditionExpression="#PK = :collection AND sk = :name",
-        ExpressionAttributeNames={"#PK": "type"},
-        ExpressionAttributeValues={
-            ":collection": "collection",
-            ":name": "name:" + name.lower(),
-        },
-    )
-
-    return result["Count"] > 0
+opus_exists = partial(exists, "opus")
+collection_exists = partial(exists, "collection")
+composer_exists = partial(exists, "composer")
 
 
 def get_by_pk(item_id: str, sort_key: str):
@@ -92,7 +81,7 @@ def get_next_id(kind: str):
 def create_composer(first_name: str, last_name: str):
     composer_id = get_next_id("composer")
 
-    name = ", ".join(filter(None, [last_name, first_name]))
+    name = composer_lookup_name(first_name, last_name)
 
     item = {
         "pk": composer_id,
@@ -152,13 +141,14 @@ def create_song(
     if composer:
         first_name = composer.get("first_name")
         last_name = composer.get("last_name")
+        lookup_name = composer_lookup_name(first_name, last_name)
+
         # create if needed
-        if not composer_exists(first_name, last_name):
+        if not composer_exists("name:" + lookup_name):
             composer = create_composer(first_name, last_name)
 
         else:
-            search_name = ", ".join(filter(None, [last_name, first_name])).lower()
-            composer = search("composer", "name:" + search_name)["Items"][0]
+            composer = search("composer", "name:" + lookup_name)["Items"][0]
 
         add_membership(composer["pk"], song_id)
 
