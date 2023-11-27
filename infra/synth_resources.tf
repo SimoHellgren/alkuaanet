@@ -18,7 +18,7 @@ provider "docker" {
 resource "docker_image" "synth-image-local" {
   name = "${aws_ecr_repository.alkuaani-synth.repository_url}:latest"
   build {
-    context = "${path.module}/../backend"
+    context = "${path.module}/../synth"
   }
 
   platform = "linux/amd64"
