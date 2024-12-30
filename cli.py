@@ -19,5 +19,13 @@ def search_song(string: str):
         print(song)
 
 
+@song.command(name="get")
+@click.argument("id", type=click.INT)
+def get_song(id: int):
+    result = crud.get_by_pk(f"song:{id}", "name")
+    if result:
+        print(result[0])
+
+
 if __name__ == "__main__":
     cli()
