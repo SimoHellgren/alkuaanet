@@ -27,5 +27,26 @@ def get_song(id: int):
         print(result[0])
 
 
+@song.command(name="add")
+@click.option("name", "-n", required=True)
+@click.option("tones", "-t", required=True, help="e.g. D4-Bb3-F3-Bb2")
+@click.option("composer", "-comp", help="Format `Last name,First names`")
+@click.option("collections", "-coll", multiple=True)
+def add_song(name: str, tones: str, composer: str, collections: list[str]):
+
+    if composer:
+        last, _, firsts = [v or None for v in composer.partition(",")]
+        composer = {"first_name": firsts, "last_name": last}
+
+    song = crud.create_song(
+        name,
+        tones,
+        composer=composer,
+        collections=collections,
+    )
+
+    print(song)
+
+
 if __name__ == "__main__":
     cli()
