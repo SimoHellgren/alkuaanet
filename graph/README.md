@@ -64,22 +64,22 @@ flowchart LR
 
     get_song[Get song details]
 
-    search_group --> choose_group
-    choose_group --> choose_song
-    search_songs --> choose_song
+    search_group --returns list of collections/composers--> choose_group
+    choose_group --returns list of songs--> choose_song
+    search_songs --returns list of songs--> choose_song
     choose_song --> get_song
 ```
 Queries for the cases above:
-- list or search for collections or composers
+- List / search for collections or composers
     - Use LookupIndex to constrain to type = collection/composer
     - If necessary, use Sort Key to filter by name
-- choose collection / composer
+- Choose collection / composer
     - Use Partition Key to constrain to specific composer
     - Use Sort Key with `"begins_with('song')"` to constrain to membership records.
     - (since membership records have the song names, this can be shown to the user)  
-- search for songs by name
+- Search song by name
   - Use LookupIndex to constrain to type = song
   - Use Sort Key to filter by name
-- display details of song (tones, opus)
+- Get song details (tones, opus)
   - Use Partition Key to get the song details (which includes tones)
   - With the tones from the point above, use the Partition Key to constrain to opus records, and the Sort Key to constrain to the specific record needed
