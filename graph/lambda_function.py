@@ -1,1 +1,1 @@
-from schema import handler
+from .schema import handler

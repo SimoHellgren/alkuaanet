@@ -1,6 +1,6 @@
 import strawberry
 from strawberry.asgi import GraphQL
-import crud
+from . import crud
 from mangum import Mangum
 from typing import Optional
 
