@@ -1,1 +1,1 @@
-from .schema import handler
+from .lib.schema import handler

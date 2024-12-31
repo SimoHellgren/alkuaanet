@@ -1,5 +1,5 @@
 import click
-from graph import crud
+from graph.lib import crud
 
 
 @click.group()
