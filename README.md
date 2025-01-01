@@ -24,4 +24,4 @@ This script is handy when doing version upgrades or adding new dependencies. Pac
 
 # Local testing
 ## Graph API
-Run `uvicorn graph.schema:app` to start a local API instance (against production DB). 
+Run `uvicorn graph.lib.schema:app` to start a local API instance (against production DB). 
