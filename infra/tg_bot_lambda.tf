@@ -2,6 +2,7 @@ data "archive_file" "telegram_bot_lambda_payload" {
   type        = "zip"
   source_dir  = "${path.module}/../telegram/"
   output_path = "${path.module}/managed-files/telegram_lambda_payload.zip"
+  excludes    = ["deps", "__pycache__"]
 }
 
 resource "aws_lambda_function" "telegram_bot_lambda" {
