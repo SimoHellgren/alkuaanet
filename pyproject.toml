@@ -27,8 +27,8 @@ requests = "^2.31.0"
 
 
 [tool.poetry.group.graphql.dependencies]
-mangum = "^0.17.0"
-strawberry-graphql = {extras = ["asgi"], version = "^0.211"}
+mangum = "^0.19"
+strawberry-graphql = {extras = ["asgi"], version = "^0"}
 
 [build-system]
 requires = ["poetry-core"]
