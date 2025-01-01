@@ -26,6 +26,12 @@ for group in ("graph", "telegram"):
 
     log.info("Exporting requirements")
 
+    # add folder and .gitignore if running for first time
+    if not DEPS_FOLDER.exists():
+        DEPS_FOLDER.mkdir(exist_ok=True)
+        with open(DEPS_FOLDER / ".gitignore", "w") as f:
+            f.write("*\n")
+
     # update requirements
     subprocess.run(
         [
