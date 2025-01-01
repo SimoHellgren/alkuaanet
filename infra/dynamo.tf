@@ -1,4 +1,4 @@
-resource "aws_dynamodb_table" "a-test-table" {
+resource "aws_dynamodb_table" "songs-table" {
   name         = "songs"
   billing_mode = "PAY_PER_REQUEST"
   hash_key     = "pk"

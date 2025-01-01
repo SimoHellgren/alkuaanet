@@ -25,8 +25,8 @@ data "aws_iam_policy_document" "alkuaanet_accesses" {
       "dynamodb:UpdateItem"
     ]
     resources = [
-      aws_dynamodb_table.a-test-table.arn,
-      "${aws_dynamodb_table.a-test-table.arn}/index/*" # access to indices, too
+      aws_dynamodb_table.songs-table.arn,
+      "${aws_dynamodb_table.songs-table.arn}/index/*" # access to indices, too
     ]
   }
 
@@ -94,7 +94,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
-  layers = [aws_lambda_layer_version.lambda_layer.arn]
+  layers = [aws_lambda_layer_version.graph_api_lambda_layer.arn]
 
   runtime = "python3.11"
 }
