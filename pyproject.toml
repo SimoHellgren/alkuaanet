@@ -26,7 +26,7 @@ telepot = "^12.7"
 requests = "^2"
 
 
-[tool.poetry.group.graphql.dependencies]
+[tool.poetry.group.graph.dependencies]
 mangum = "^0.19"
 strawberry-graphql = {extras = ["asgi"], version = "^0"}
 
