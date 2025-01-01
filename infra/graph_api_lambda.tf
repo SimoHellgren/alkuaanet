@@ -82,7 +82,7 @@ resource "aws_iam_role_policy_attachment" "alkuaanet_lambda_policy_attachment" {
 data "archive_file" "graph_api_lambda_payload" {
   type        = "zip"
   source_dir  = "${path.module}/../graph/"
-  excludes    = ["deps"] # this can be removed after lambda_layer deploy is automated, and the folder is cleaned up
+  excludes    = ["deps", "__pycache__", "cli.py", "README.md"] # these ignores are a bit tedious - could perhaps rethink structure
   output_path = "${path.module}/managed-files/graph_lambda_payload.zip"
 }
 
