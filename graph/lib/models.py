@@ -25,7 +25,10 @@ class ComposerCreate(ComposerBase):
 
 
 class Composer(ComposerBase):
-    pass
+    pk: str
+    sk: str
+
+    random: Decimal
 
 
 class CollectionBase(BaseModel):
@@ -44,7 +47,10 @@ class CollectionCreate(CollectionBase):
 
 
 class Collection(CollectionBase):
-    pass
+    pk: str
+    sk: str
+
+    random: Decimal
 
 
 class SongBase(BaseModel):
