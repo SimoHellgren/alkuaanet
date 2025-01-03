@@ -45,7 +45,7 @@ class CRUDBase:
 
         return None
 
-    def create(self, data):
+    def create(self, table, data):
         pass
 
     def _peek_sequence(self, table) -> int:
