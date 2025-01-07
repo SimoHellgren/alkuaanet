@@ -48,6 +48,29 @@ class CRUDBase:
     def create(self, table, data):
         pass
 
+    def delete(self, table, id: int) -> "list[dict]":
+        """Use `reverse-index` to get the primary keys of
+        1. the record itself
+        2. all relationships the record has.
+
+        Then, delete all of the above
+        """
+        result = table.query(
+            IndexName="reverse-index",
+            KeyConditionExpression="sk = :id",
+            ExpressionAttributeValues={":id": f"{self.model.__kind__}:{id}"},
+        )
+
+        # technically no need to "filter" `item` here, since reverse-index projects (return)
+        # KEYS_ONLY, but just in case that changes
+        keys = [
+            {"pk": item["pk"], "sk": item["sk"]} for item in result.get("Items", [])
+        ]
+
+        deleted = [table.delete_item(Key=key, ReturnValues="ALL_NEW") for key in keys]
+
+        return deleted
+
     def _peek_sequence(self, table) -> int:
         """Utility for checking what the current_value of this record type's sequence is"""
         result = table.get_item(
