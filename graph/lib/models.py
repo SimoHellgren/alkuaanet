@@ -71,8 +71,13 @@ class SongBase(BaseModel):
 
 
 class SongCreate(SongBase):
-    composer: list[ComposerCreate] = []
-    collections: list[CollectionCreate] = []
+    """The below fields are commented out, as song creation itself doesn't really require these.
+    Need to think where to handle creating membership records. A GraphQL mutation could probably
+    be a good place to fire off resolvers
+    """
+
+    # composer: list[ComposerCreate] = []
+    # collections: list[CollectionCreate] = []
 
 
 class Song(SongBase):

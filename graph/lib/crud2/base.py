@@ -1,5 +1,7 @@
 """default implementations for CRUD"""
 
+from decimal import Decimal
+from random import random
 from typing import Protocol, ClassVar
 from lib.models import Song, SearchResult
 
@@ -45,8 +47,24 @@ class CRUDBase:
 
         return None
 
-    def create(self, table, data):
-        pass
+    # TODO: add proper "ModelCreate" to annotate `data`
+    def create(self, table, data) -> Model:
+        new_id = self._get_next_id(table)
+
+        item_in = {
+            "pk": self.model.__kind__,
+            "sk": f"{self.model.__kind__}:{new_id}",
+            "random": Decimal(
+                str(random())
+            ),  # not sure if this should be generated here
+            **data.model_dump(),
+        }
+
+        response = table.put_item(Item=item_in)
+
+        # TODO: might want to check for errors here
+
+        return self.model(**item_in)
 
     def delete(self, table, id: int) -> "list[dict]":
         """Use `reverse-index` to get the primary keys of
@@ -67,7 +85,7 @@ class CRUDBase:
             {"pk": item["pk"], "sk": item["sk"]} for item in result.get("Items", [])
         ]
 
-        deleted = [table.delete_item(Key=key, ReturnValues="ALL_NEW") for key in keys]
+        deleted = [table.delete_item(Key=key, ReturnValues="ALL_OLD") for key in keys]
 
         return deleted
 
