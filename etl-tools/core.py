@@ -5,8 +5,6 @@ import json
 import boto3
 import boto3.dynamodb.types
 
-RESOURCE = boto3.resource("dynamodb")
-
 
 class Table:
     def __init__(self, name: str, version: int):
@@ -14,8 +12,12 @@ class Table:
         self.version = version
 
     @cached_property
+    def resource(self):
+        return boto3.resource("dynamodb")
+
+    @cached_property
     def table(self):
-        return RESOURCE.Table(self.name)
+        return self.resource.Table(self.name)
 
     # scan ends up being the best option because there isn't an easy way to query
     # for all of the membership records in one go
