@@ -33,6 +33,11 @@ class Table:
             response = self.table.scan(ExclusiveStartKey=key)
             yield from response["Items"]
 
+    def populate(self, data: list[dict]):
+        with self.table.batch_writer() as batch:
+            for item in data:
+                batch.put_item(Item=item)
+
 
 def sorted_groupby(it, key):
     yield from groupby(sorted(it, key=key), key=key)
