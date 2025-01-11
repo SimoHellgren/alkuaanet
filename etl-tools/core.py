@@ -32,12 +32,6 @@ class Table:
             yield from response["Items"]
 
 
-TABLES = {
-    "songs": Table("songs", 1),
-    "songs_v2": Table("songs_v2", 2),
-}
-
-
 def sorted_groupby(it, key):
     yield from groupby(sorted(it, key=key), key=key)
 
