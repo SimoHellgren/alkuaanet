@@ -1,8 +1,41 @@
 from decimal import Decimal
+from functools import cached_property
 from itertools import groupby
 import json
 import boto3
 import boto3.dynamodb.types
+
+RESOURCE = boto3.resource("dynamodb")
+
+
+class Table:
+    def __init__(self, name: str, version: int):
+        self.name = name
+        self.version = version
+
+    @cached_property
+    def table(self):
+        return RESOURCE.Table(self.name)
+
+    # scan ends up being the best option because there isn't an easy way to query
+    # for all of the membership records in one go
+    def get_data(self):
+        i = 1
+
+        print("Getting page", i)
+        response = self.table.scan()
+        yield from response["Items"]
+        while key := response.get("LastEvaluatedKey"):
+            i += 1
+            print("Getting page", i)
+            response = self.table.scan(ExclusiveStartKey=key)
+            yield from response["Items"]
+
+
+TABLES = {
+    "songs": Table("songs", 1),
+    "songs_v2": Table("songs_v2", 2),
+}
 
 
 def sorted_groupby(it, key):
@@ -18,18 +51,3 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, boto3.dynamodb.types.Binary):
             return obj.value.decode("utf-8")
         return super().default(obj)
-
-
-# scan ends up being the best option because there isn't an easy way to query
-# for all of the membership records in one go
-def get_data(table):
-    i = 1
-
-    print("Getting page", i)
-    response = table.scan()
-    yield from response["Items"]
-    while key := response.get("LastEvaluatedKey"):
-        i += 1
-        print("Getting page", i)
-        response = table.scan(ExclusiveStartKey=key)
-        yield from response["Items"]

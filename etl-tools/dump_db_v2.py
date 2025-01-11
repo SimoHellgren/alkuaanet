@@ -3,13 +3,10 @@
 from datetime import datetime
 import json
 from pathlib import Path
-import boto3
-from core import get_data, JSONEncoder, sorted_groupby
+from core import JSONEncoder, sorted_groupby, TABLES
 
-TABLE_NAME = "songs_v2"
-TABLE_VERSION = 2
-RESOURCE = boto3.resource("dynamodb")
-TABLE = RESOURCE.Table(TABLE_NAME)
+TABLE = TABLES["songs_v2"]
+
 BASIC_KINDS = [
     "song",
     "composer",
@@ -39,9 +36,9 @@ if __name__ == "__main__":
     TARGET_FOLDER.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%S")
-    FILE = TARGET_FOLDER / f"{TABLE_NAME}_{timestamp}.json"
+    FILE = TARGET_FOLDER / f"{TABLE.name}_{timestamp}.json"
 
-    data = {k: list(v) for k, v in sorted_groupby(get_data(TABLE), key=kind)}
+    data = {k: list(v) for k, v in sorted_groupby(TABLE.get_data(), key=kind)}
 
     for k, records in data.items():
         print(f"Found {len(records):>4} records of kind {k}")
@@ -49,8 +46,8 @@ if __name__ == "__main__":
     print(f"Total {sum(map(len, data.values())):>4} records")
 
     data["__meta"] = {
-        "table_name": TABLE_NAME,
-        "table_version": 2,
+        "table_name": TABLE.name,
+        "table_version": TABLE.version,
     }
 
     with open(FILE, "w") as f:
