@@ -1,7 +1,7 @@
+import argparse
 from datetime import datetime
 import json
 from pathlib import Path
-import sys
 
 from core import Table, JSONEncoder, sorted_groupby
 
@@ -39,9 +39,20 @@ TABLES = {
     "songs_v2": (Table("songs_v2", 2), kind_v2),
 }
 
-
 if __name__ == "__main__":
-    tablename = sys.argv[1]
+    parser = argparse.ArgumentParser(
+        prog="py dump.py",
+        description="Given a table name, dumps the data. Tables need to be registered in dump.py.",
+    )
+
+    parser.add_argument("table_name", choices=TABLES.keys())
+    args = parser.parse_args()
+
+    tablename = args.table_name
+
+    if tablename not in TABLES:
+        raise ValueError(f"`{tablename}` is not registered.")
+
     table, kind = TABLES[tablename]
 
     TARGET_FOLDER = Path(__file__).parent / "dumps"
