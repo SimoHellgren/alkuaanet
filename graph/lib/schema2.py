@@ -58,7 +58,14 @@ class Composer:
     @strawberry.field
     def songs(self) -> list[Song]:
         records = crud.composers.list_songs(TABLE, self.id)
-        return [get_song(sk_to_id(record.sk)) for record in records]
+        return [
+            Song(
+                id=sk_to_id(record.sk),
+                name=record.name,
+                tones=record.tones,
+            )
+            for record in records
+        ]
 
 
 def get_composer(id: int) -> Composer:
@@ -78,8 +85,15 @@ class Collection:
 
     @strawberry.field
     def songs(self) -> list[Song]:
-        records = crud.collections.list_songs(TABLE, self.id)
-        return [get_song(sk_to_id(record.sk)) for record in records]
+        records = crud.composers.list_songs(TABLE, self.id)
+        return [
+            Song(
+                id=sk_to_id(record.sk),
+                name=record.name,
+                tones=record.tones,
+            )
+            for record in records
+        ]
 
 
 def get_collection(id: int) -> Collection:

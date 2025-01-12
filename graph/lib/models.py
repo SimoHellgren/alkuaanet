@@ -97,3 +97,4 @@ class SearchResult(BaseModel):
     pk: str
     sk: str
     name: str | None = None
+    tones: str | None = None
