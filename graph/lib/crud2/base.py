@@ -67,6 +67,8 @@ class CRUDBase:
         return self.model(**item_in)
 
     def delete(self, table, id: int) -> "list[dict]":
+        # TODO: this method should probably just delete the record itself.
+        # Instead, this logic would probably be better suited for the API layer
         """Use `reverse-index` to get the primary keys of
         1. the record itself
         2. all relationships the record has.
