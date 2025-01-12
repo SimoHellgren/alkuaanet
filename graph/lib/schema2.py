@@ -3,15 +3,16 @@ from strawberry.asgi import GraphQL
 import boto3
 from lib import crud2 as crud
 from lib import models
+from enum import StrEnum, auto
 
 TABLE = boto3.resource("dynamodb").Table("songs_v2")
 
 
-@strawberry.experimental.pydantic.type(model=models.SearchResult, all_fields=True)
-class SearchResult:
-    """This might be an unnecessary abstraction in the API:
-    Ideally, the user would never need to deal with this internal detail.
-    """
+@strawberry.enum
+class Kind(StrEnum):
+    composer = auto()
+    collection = auto()
+    song = auto()
 
 
 def resolve_opus(tones: str):
@@ -33,15 +34,27 @@ class Song:
     def opus(self) -> str:
         return resolve_opus(self.tones)
 
+    @classmethod
+    def from_db(cls, record: models.Song):
+        return cls(
+            id=sk_to_id(record.sk),
+            name=record.name,
+            tones=record.tones,
+        )
+
+    @classmethod
+    def from_searchresult(cls, record: models.SearchResult):
+        return cls(
+            id=sk_to_id(record.sk),
+            name=record.name,
+            tones=record.tones,
+        )
+
 
 def get_song(id: int) -> Song:
     song = crud.songs.get(TABLE, id)
 
-    return Song(
-        id=sk_to_id(song.sk),
-        name=song.name,
-        tones=song.tones,
-    )
+    return Song.from_db(song)
 
 
 @strawberry.type
@@ -58,14 +71,13 @@ class Composer:
     @strawberry.field
     def songs(self) -> list[Song]:
         records = crud.composers.list_songs(TABLE, self.id)
-        return [
-            Song(
-                id=sk_to_id(record.sk),
-                name=record.name,
-                tones=record.tones,
-            )
-            for record in records
-        ]
+        return [Song.from_db(record) for record in records]
+
+    @classmethod
+    def from_searchresult(cls, record: models.SearchResult):
+        last, first = record.name.split(", ", maxsplit=1)
+
+        return cls(id=sk_to_id(record.sk), first_name=first, last_name=last)
 
 
 def get_composer(id: int) -> Composer:
@@ -86,14 +98,14 @@ class Collection:
     @strawberry.field
     def songs(self) -> list[Song]:
         records = crud.composers.list_songs(TABLE, self.id)
-        return [
-            Song(
-                id=sk_to_id(record.sk),
-                name=record.name,
-                tones=record.tones,
-            )
-            for record in records
-        ]
+        return [Song.from_db(record) for record in records]
+
+    @classmethod
+    def from_searchresult(cls, record: models.SearchResult):
+        return cls(
+            id=sk_to_id(record.sk),
+            name=record.name,
+        )
 
 
 def get_collection(id: int) -> Collection:
@@ -114,16 +126,17 @@ class Query:
     collection: Collection = strawberry.field(resolver=get_collection)
 
     @strawberry.field
-    def search_song(self, string: str) -> list[SearchResult]:
-        return crud.songs.search(TABLE, string)
+    def search(self, kind: Kind, string: str) -> list[Song | Composer | Collection]:
+        mapping = {
+            Kind.song: (crud.songs, Song),
+            Kind.collection: (crud.collections, Collection),
+            Kind.composer: (crud.composers, Composer),
+        }
 
-    @strawberry.field
-    def search_composer(self, string: str) -> list[SearchResult]:
-        return crud.composers.search(TABLE, string)
+        searcher, model = mapping[kind]
 
-    @strawberry.field
-    def search_collection(self, string: str) -> list[SearchResult]:
-        return crud.collections.search(TABLE, string)
+        records = searcher.search(TABLE, string)
+        return [model.from_searchresult(record) for record in records]
 
 
 schema = strawberry.Schema(query=Query)
