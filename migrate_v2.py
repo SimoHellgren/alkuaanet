@@ -6,6 +6,7 @@ from decimal import Decimal
 from itertools import chain
 
 flatten = chain.from_iterable
+find = lambda func, seq, default=None: next(filter(func, seq), default)
 
 dynamo = boto3.resource("dynamodb")
 
@@ -33,6 +34,8 @@ def transform_basic(item):
 
 def get_data():
     i = 1
+
+    print("Getting page", i)
     response = source_table.scan()
     yield from response["Items"]
     while key := response.get("LastEvaluatedKey"):
@@ -49,15 +52,21 @@ composers = list(filter(lambda x: x.get("type") == "composer", data))
 collections = list(filter(lambda x: x.get("type") == "collection", data))
 
 opuses = list(filter(lambda x: x.get("type") == "opus", data))
+
 memberships = list(filter(lambda x: x.get("type") == "membership", data))
+# add tones to memberships
+tones_mapping = {song["pk"]: song["tones"] for song in songs}
+new_memberships = [{**m, "tones": tones_mapping[m["sk"]]} for m in memberships]
+
 sequences = list(filter(lambda x: x.get("pk") == "sequence", data))
+
 
 all_kinds = [
     list(map(transform_basic, songs)),
     list(map(transform_basic, composers)),
     list(map(transform_basic, collections)),
     opuses,
-    memberships,
+    new_memberships,
     sequences,
 ]
 
