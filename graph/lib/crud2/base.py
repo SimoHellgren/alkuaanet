@@ -117,8 +117,6 @@ class CRUDBase:
 
 
 class Group(CRUDBase):
-    """Extends Base with ability to list songs"""
-
     def list_songs(self, table, id: int) -> list[SearchResult]:
         result = table.query(
             KeyConditionExpression="pk = :kind",
@@ -126,3 +124,30 @@ class Group(CRUDBase):
         )
 
         return [SearchResult(**item) for item in result["Items"]]
+
+    def delete(self, table, id: int):
+        # TODO: this method should probably just delete the record itself.
+        # Instead, this logic would probably be better suited for the API layer
+        """Delete the record itself, followed by deleting the associated membership records"""
+        table.delete_item(
+            Key={"pk": self.model.__kind__, "sk": f"{self.model.__kind__}:{id}"}
+        )
+
+        rest = self.list_songs(table, id)
+
+        for record in rest:
+            key = {"pk": record.pk, "sk": record.sk}
+            table.delete_item(Key=key)
+
+    def add_song(self, table, group_id: int, song_id: int):
+        # find song to figure out it's name
+        # (not sure if this should be done here)
+        song = table.get_item(Key={"pk": "song", "sk": f"song:{song_id}"}).get("Item")
+
+        item_in = {
+            "pk": f"{self.model.__kind__}:{group_id}",
+            "sk": f"song:{song_id}",
+            "name": song["name"],
+        }
+
+        table.put_item(Item=item_in)
