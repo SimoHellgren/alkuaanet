@@ -68,7 +68,7 @@ resource "aws_dynamodb_table" "songs-table-v2" {
   }
 
   global_secondary_index {
-    name            = "reverse-index"
+    name            = "reverse_index"
     hash_key        = "sk"
     range_key       = "pk"
     projection_type = "KEYS_ONLY"

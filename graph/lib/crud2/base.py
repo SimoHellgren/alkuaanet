@@ -69,19 +69,19 @@ class CRUDBase:
     def delete(self, table, id: int) -> "list[dict]":
         # TODO: this method should probably just delete the record itself.
         # Instead, this logic would probably be better suited for the API layer
-        """Use `reverse-index` to get the primary keys of
+        """Use `reverse_index` to get the primary keys of
         1. the record itself
         2. all relationships the record has.
 
         Then, delete all of the above
         """
         result = table.query(
-            IndexName="reverse-index",
+            IndexName="reverse_index",
             KeyConditionExpression="sk = :id",
             ExpressionAttributeValues={":id": f"{self.model.__kind__}:{id}"},
         )
 
-        # technically no need to "filter" `item` here, since reverse-index projects (return)
+        # technically no need to "filter" `item` here, since reverse_index projects (return)
         # KEYS_ONLY, but just in case that changes
         keys = [
             {"pk": item["pk"], "sk": item["sk"]} for item in result.get("Items", [])
