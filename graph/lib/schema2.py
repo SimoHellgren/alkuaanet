@@ -68,7 +68,7 @@ class Query:
 
     @strawberry.field
     def search_composer(self, string: str) -> list[SearchResult]:
-        return crud.composerss.search(TABLE, string)
+        return crud.composers.search(TABLE, string)
 
     @strawberry.field
     def collection(self, id: int) -> Collection:
