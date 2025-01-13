@@ -15,6 +15,14 @@ class Kind(StrEnum):
     song = auto()
 
 
+@strawberry.interface
+class Searchable:
+    """This name is perhaps a touch generic"""
+
+    id: int
+    name: str
+
+
 def resolve_opus(tones: str):
     obj = crud.opus.get(TABLE, tones)
     return obj.opus.value.decode("utf-8")
@@ -25,9 +33,7 @@ def sk_to_id(sk: str) -> int:
 
 
 @strawberry.type
-class Song:
-    id: int
-    name: str
+class Song(Searchable):
     tones: str
 
     @strawberry.field
@@ -58,8 +64,7 @@ def get_song(id: int) -> Song:
 
 
 @strawberry.type
-class Composer:
-    id: int
+class Composer(Searchable):
     first_name: str
     last_name: str
 
@@ -91,9 +96,7 @@ def get_composer(id: int) -> Composer:
 
 
 @strawberry.type
-class Collection:
-    id: int
-    name: str
+class Collection(Searchable):
 
     @strawberry.field
     def songs(self) -> list[Song]:
@@ -126,7 +129,7 @@ class Query:
     collection: Collection = strawberry.field(resolver=get_collection)
 
     @strawberry.field
-    def search(self, kind: Kind, string: str) -> list[Song | Composer | Collection]:
+    def search(self, kind: Kind, string: str) -> list[Searchable]:
         mapping = {
             Kind.song: (crud.songs, Song),
             Kind.collection: (crud.collections, Collection),
