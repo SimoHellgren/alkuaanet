@@ -65,7 +65,7 @@ def get_song(id: int) -> Song:
 
 @strawberry.type
 class Composer(Searchable):
-    first_name: str
+    first_name: str | None
     last_name: str
 
     # this is already defined in the pydantic model, but for some reason it's not picked up
@@ -80,9 +80,10 @@ class Composer(Searchable):
 
     @classmethod
     def from_searchresult(cls, record: models.SearchResult):
-        last, first = record.name.split(", ", maxsplit=1)
+        # this accomodates for empty first name, most notably "trad"
+        last, _, first = record.name.partition(", ")
 
-        return cls(id=sk_to_id(record.sk), first_name=first, last_name=last)
+        return cls(id=sk_to_id(record.sk), first_name=first or None, last_name=last)
 
 
 def get_composer(id: int) -> Composer:
@@ -136,9 +137,15 @@ class Query:
             Kind.composer: (crud.composers, Composer),
         }
 
-        searcher, model = mapping[kind]
+        klass, model = mapping[kind]
 
-        records = searcher.search(TABLE, string)
+        # this part allows searching with an empty string. Technically the problem
+        # is in crud and not the API, but this is a pretty convenient fix for now
+        if not string:
+            records = sorted(klass.list(TABLE), key=lambda x: x.name)
+        else:
+            records = klass.search(TABLE, string)
+
         return [model.from_searchresult(record) for record in records]
 
 
