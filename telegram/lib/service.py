@@ -19,14 +19,19 @@ def query(q: str):
 
 
 def search(kind: Kind, search_string: str):
-    q = f"""{{search (kind: "{kind}", string: "{search_string}") {{id, name}}}}"""
+    q = f"""
+    {{
+        search (kind: {kind}, string: "{search_string}") {{
+            id, name
+        }}
+    }}"""
     result = query(q)
 
     return result["data"]["search"]
 
 
-def get_song(song_id):
-    q = f"""{{song (songId: "{song_id}") {{ id, name tones, opus }} }}"""
+def get_song(song_id: int):
+    q = f"""{{song (id: {song_id}) {{ id, name, tones, opus }} }}"""
     result = query(q)
     song = result["data"]["song"]
 
@@ -36,7 +41,20 @@ def get_song(song_id):
     return song
 
 
-def get_songlist(group_id: str):
-    q = f"""{{item (pk: "{group_id}", sk: "song"){{id, name}}}}"""
+def get_songlist(group_pk: str):
+    """Splitting the pk here is a bit smelly"""
+    kind, num = group_pk.split(":")
+
+    q = f"""
+    {{
+        {kind} (id: {num}) {{
+            songs {{
+                id, name
+            }}
+        }}
+    }}
+    """
+
     result = query(q)
-    return result["data"]["item"]
+
+    return result["data"][kind]["songs"]
