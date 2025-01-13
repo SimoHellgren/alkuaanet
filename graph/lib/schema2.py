@@ -101,7 +101,7 @@ class Collection(Searchable):
 
     @strawberry.field
     def songs(self) -> list[Song]:
-        records = crud.composers.list_songs(TABLE, self.id)
+        records = crud.collections.list_songs(TABLE, self.id)
         return [Song.from_db(record) for record in records]
 
     @classmethod
