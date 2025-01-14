@@ -71,6 +71,10 @@ for group in groups:
             "-t",
             DEPS_FOLDER / "python",
             "--upgrade",
+            "--platform",
+            "manylinux2014_x86_64",
+            "--only-binary",
+            ":all:",
         ]
     )
 
