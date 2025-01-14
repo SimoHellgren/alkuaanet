@@ -29,6 +29,7 @@ requests = "^2"
 [tool.poetry.group.graph.dependencies]
 mangum = "^0.19"
 strawberry-graphql = {extras = ["asgi"], version = "^0"}
+pydantic = "^2.10.4"
 
 [build-system]
 requires = ["poetry-core"]

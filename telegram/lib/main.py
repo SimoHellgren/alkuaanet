@@ -13,9 +13,11 @@ token = token_param["Parameter"]["Value"]
 bot = telepot.Bot(token)
 
 
-def reply_keyboard(data):
+def reply_keyboard(data, kind):
+    """`kind` is a bit smelly"""
     buttons = [
-        [InlineKeyboardButton(text=d["name"], callback_data=d["id"])] for d in data
+        [InlineKeyboardButton(text=d["name"], callback_data=f"{kind}:{d['id']}")]
+        for d in data
     ]
     return InlineKeyboardMarkup(inline_keyboard=buttons)
 
@@ -36,7 +38,7 @@ def handle_search_command(command, args):
     data = graph.search(kind, args)
 
     if data:
-        kb = reply_keyboard(data)
+        kb = reply_keyboard(data, kind)
         msg = f"Results for {kind} {args}"
     else:
         kb = None
@@ -90,10 +92,10 @@ def song_to_message(song):
 def on_callback(message):
     _, chat_id, callback = telepot.glance(message, flavor="callback_query")
 
-    kind, _ = callback.split(":")
+    kind, _, num = callback.partition(":")
 
     if kind == "song":
-        song = graph.get_song(callback)
+        song = graph.get_song(int(num))
 
         bot.sendMessage(chat_id, song_to_message(song))
         bot.sendVoice(chat_id, song["opus"])
@@ -102,7 +104,7 @@ def on_callback(message):
         songs = graph.get_songlist(callback)
 
         if songs:
-            kb = reply_keyboard(sorted(songs, key=lambda x: x["name"]))
+            kb = reply_keyboard(sorted(songs, key=lambda x: x["name"]), "song")
             bot.sendMessage(chat_id, "Results:", reply_markup=kb)
         else:
             bot.sendMessage(chat_id, "No results")

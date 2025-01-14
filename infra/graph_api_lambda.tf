@@ -26,7 +26,10 @@ data "aws_iam_policy_document" "alkuaanet_accesses" {
     ]
     resources = [
       aws_dynamodb_table.songs-table.arn,
-      "${aws_dynamodb_table.songs-table.arn}/index/*" # access to indices, too
+      "${aws_dynamodb_table.songs-table.arn}/index/*", # access to indices, too
+
+      aws_dynamodb_table.songs-table-v2.arn,
+      "${aws_dynamodb_table.songs-table-v2.arn}/index/*", # access to indices, too
     ]
   }
 
@@ -90,7 +93,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
   filename      = "${path.module}/managed-files/graph_lambda_payload.zip"
   function_name = "alkuaanet-graph-api"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "lib.schema.handler"
+  handler       = "lib.schema2.handler"
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
