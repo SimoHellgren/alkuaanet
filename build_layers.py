@@ -1,5 +1,6 @@
 """Utility for building lambda layers"""
 
+import sys
 import subprocess
 from pathlib import Path
 import shutil
@@ -14,10 +15,17 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 log.addHandler(handler)
 
+# get groups from command line
+groups = sys.argv[1:]
+
+if not groups:
+    logging.info("No groups given!")
+    logging.info(f"Do something like:\n\tpy {sys.argv[0]} graph telegram")
+    exit(0)
 
 OUT_FOLDER = Path("infra/managed-files")
 
-for group in ("graph", "telegram"):
+for group in groups:
 
     log.info(f"Handling group '{group}'")
 
