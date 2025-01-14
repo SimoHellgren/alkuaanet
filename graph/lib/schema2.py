@@ -1,5 +1,6 @@
 import strawberry
 from strawberry.asgi import GraphQL
+from mangum import Mangum
 import boto3
 from lib import crud2 as crud
 from lib import models
@@ -151,3 +152,4 @@ class Query:
 
 schema = strawberry.Schema(query=Query)
 app = GraphQL(schema)
+handler = Mangum(app)
