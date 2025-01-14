@@ -26,7 +26,10 @@ data "aws_iam_policy_document" "alkuaanet_accesses" {
     ]
     resources = [
       aws_dynamodb_table.songs-table.arn,
-      "${aws_dynamodb_table.songs-table.arn}/index/*" # access to indices, too
+      "${aws_dynamodb_table.songs-table.arn}/index/*", # access to indices, too
+
+      aws_dynamodb_table.songs-table-v2.arn,
+      "${aws_dynamodb_table.songs-table-v2.arn}/index/*", # access to indices, too
     ]
   }
 
