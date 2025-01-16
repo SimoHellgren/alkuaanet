@@ -49,22 +49,25 @@ class CRUDBase:
         return None
 
     def random(self, table) -> Model:
-        randnum = Decimal(str(rand.random()))
-
-        key_cond_expr = Key("pk").eq(self.model.__kind__) & Key("random").gt(randnum)
-
         # loop until we get a result.
         # As of 2025-01, there's theoretically a <1% change for failure for songs
         # (the largest random number in the db was around 0.999)
         # not really feasible to
+        i = 1
         while not (
             result := table.query(
-                KeyConditionExpression=key_cond_expr, Limit=1, IndexName="random_index"
+                KeyConditionExpression=Key("pk").eq(self.model.__kind__)
+                & Key("random").gt(Decimal(str(rand.random()))),
+                Limit=1,
+                IndexName="random_index",
             ).get("Items")
         ):
-            pass
+            print("Attempt", i, "unsuccesful")
+            i += 1
 
-        return result[0]
+        _, num = result[0]["sk"].split(":")
+
+        return self.get(table, int(num))
 
     # TODO: add proper "ModelCreate" to annotate `data`
     def create(self, table, data) -> Model:
