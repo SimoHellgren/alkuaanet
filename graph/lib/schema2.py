@@ -149,6 +149,12 @@ class Query:
 
         return [model.from_searchresult(record) for record in records]
 
+    @strawberry.field
+    def random_song(self) -> Song:
+        song = crud.songs.random(TABLE)
+
+        return Song.from_db(song)
+
 
 schema = strawberry.Schema(query=Query)
 app = GraphQL(schema)

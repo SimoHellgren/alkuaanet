@@ -1,9 +1,10 @@
 """default implementations for CRUD"""
 
 from decimal import Decimal
-from random import random
+import random as rand  # this is bad, I know
 from typing import Protocol, ClassVar
-from lib.models import Song, SearchResult
+from lib.models import SearchResult
+from boto3.dynamodb.conditions import Key
 
 # TODO: improve typing with python 3.13 generics
 
@@ -47,6 +48,27 @@ class CRUDBase:
 
         return None
 
+    def random(self, table) -> Model:
+        # loop until we get a result.
+        # As of 2025-01, there's theoretically a <1% change for failure for songs
+        # (the largest random number in the db was around 0.999)
+        # not really feasible to
+        i = 1
+        while not (
+            result := table.query(
+                KeyConditionExpression=Key("pk").eq(self.model.__kind__)
+                & Key("random").gt(Decimal(str(rand.random()))),
+                Limit=1,
+                IndexName="random_index",
+            ).get("Items")
+        ):
+            print("Attempt", i, "unsuccesful")
+            i += 1
+
+        _, num = result[0]["sk"].split(":")
+
+        return self.get(table, int(num))
+
     # TODO: add proper "ModelCreate" to annotate `data`
     def create(self, table, data) -> Model:
         new_id = self._get_next_id(table)
@@ -55,7 +77,7 @@ class CRUDBase:
             "pk": self.model.__kind__,
             "sk": f"{self.model.__kind__}:{new_id}",
             "random": Decimal(
-                str(random())
+                str(rand.random())
             ),  # not sure if this should be generated here
             **data.model_dump(),
         }
