@@ -74,9 +74,16 @@ def on_chat(message):
             "/collections p\n"
             "/composers\n"
             "/composers kuu\n"
+            "/random"
         )
 
         bot.sendMessage(chat_id, msg)
+
+    elif command == "/random":
+        song = graph.get_random_song()
+
+        bot.sendMessage(chat_id, song_to_message(song))
+        bot.sendVoice(chat_id, song["opus"])
 
     else:
         msg, kb = handle_search_command(command, args)

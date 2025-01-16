@@ -58,3 +58,14 @@ def get_songlist(group_pk: str):
     result = query(q)
 
     return result["data"][kind]["songs"]
+
+
+def get_random_song():
+    q = "{randomSong {id, name, tones, opus}}"
+    result = query(q)
+    song = result["data"]["randomSong"]
+
+    # convert opus to bytestream
+    opus = BytesIO(base64.b64decode(song["opus"]))
+    song["opus"] = opus
+    return song
