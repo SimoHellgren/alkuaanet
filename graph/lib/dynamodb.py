@@ -73,12 +73,29 @@ def random(kind: Kind) -> dict:
     return item
 
 
-def create():
-    raise NotImplementedError
+# TODO: ponder on the questions posed in the docstring
+def put(item: dict) -> dict:
+    """This wrapper is very thin, but useful at least as a closure for TABLE.
+    Used for both creation and updating (whole) records.
+
+    The question is: should this module aim at being super generic and not know anything about the
+    implementation of the models? Or should it know stuff like generating id's when creating records
+    of certain `kind` (or even that `kind` exists at all)? Maybe it should be something in between.
+    DynamoDB is by nature always very implementation-bound, so perhaps this module should just
+    acknowledge that. A crud module might then just implement a nicer interface for the API to call.
+    """
+
+    response = TABLE.put_item(Item=item)
+
+    # TODO: might want to check for errors here
+    return item
 
 
-def delete():
-    raise NotImplementedError
+def delete(pk: str, sk: str) -> dict:
+    deleted = TABLE.delete_item(Key={"pk": pk, "sk": sk}, ReturnValues="ALL_OLD")
+
+    # TODO: ensure that this record makes sense
+    return deleted
 
 
 def _peek_sequence(kind: Kind) -> int:
