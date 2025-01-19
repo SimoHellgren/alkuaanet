@@ -93,7 +93,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
   filename      = "${path.module}/managed-files/graph_lambda_payload.zip"
   function_name = "alkuaanet-graph-api"
   role          = aws_iam_role.iam_for_lambda.arn
-  handler       = "lib.schema2.handler"
+  handler       = "lib.schema.handler"
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 

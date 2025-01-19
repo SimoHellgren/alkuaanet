@@ -2,4 +2,4 @@
 Instead, edit the .tf file to point to the handler, if it needs changing.
 """
 
-from .lib.schema2 import handler
+from .lib.schema import handler
