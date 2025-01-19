@@ -2,8 +2,8 @@ from decimal import Decimal
 import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
-from lib import crud2 as crud
 from lib import dynamodb as db
+from lib import opus
 from enum import StrEnum, auto
 
 
@@ -90,7 +90,7 @@ def get_collection(id: int) -> Collection:
 
 
 def resolve_opus(tones: str):
-    data = db.get_item("opus", tones)
+    data = opus.get(tones)
     return data["opus"].value.decode("utf-8")
 
 
