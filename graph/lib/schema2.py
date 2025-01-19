@@ -30,7 +30,7 @@ class Record:
     # not sure whether this is nice or not
     # basically, having these here allows to construct
     # the records directly form searches. Explicit would
-    # prbably be better
+    # probably be better
     search_name: strawberry.Private[str | None] = None
     random: strawberry.Private[Decimal | None] = None
 
@@ -41,7 +41,9 @@ class Record:
 
 @strawberry.type
 class NewSong(Record):
-    tones: str
+    # this being optional is only needed to facilitate searching.
+    # should add `tones` to the index projection in dynamo instead
+    tones: str | None = None
 
     @strawberry.field
     def opus(self) -> str:
@@ -61,6 +63,12 @@ class Group:
 class NewComposer(Record, Group):
     first_name: str | None = None
     last_name: str
+
+    @classmethod
+    def from_searchresult(cls, data: dict):
+        last, _, first = data["name"].partition(", ")
+
+        return cls(**data, last_name=last, first_name=first or None)
 
 
 @strawberry.type
@@ -208,6 +216,29 @@ class Query:
         item = db.random(db.Kind.song)
 
         return NewSong(**item)
+
+    @strawberry.field
+    def new_search(self, kind: Kind, string: str) -> list[Record]:
+        if not string:
+            # `kind` is technically of the wrong type for db.list_kind
+            records = sorted(db.list_kind(kind), key=lambda x: x["name"])
+
+        else:
+            records = db.search(kind, string)
+
+            # a bit janky to do this here, but oh well
+            if kind == Kind.composer:
+                return [NewComposer.from_searchresult(record) for record in records]
+
+        mapping = {
+            Kind.song: NewSong,
+            Kind.composer: NewComposer,
+            Kind.collection: NewCollection,
+        }
+
+        model = mapping[kind]
+
+        return [model(**record) for record in records]
 
     @strawberry.field
     def search(self, kind: Kind, string: str) -> list[Searchable]:
