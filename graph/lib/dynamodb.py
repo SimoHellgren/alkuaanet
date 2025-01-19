@@ -34,6 +34,13 @@ def list_kind(kind: Kind) -> list[dict]:
     return result.get("Items", [])
 
 
+def memberships(pk: str) -> list[dict]:
+    """Essentially the same as list_kind but a different signature"""
+    result = TABLE.query(KeyConditionExpression=Key("pk").eq(pk))
+
+    return result.get("Items", [])
+
+
 def search(kind: Kind, string: str) -> dict | None:
     result = TABLE.query(
         IndexName=SEARCH_INDEX,

@@ -1,9 +1,11 @@
+from decimal import Decimal
 import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
 import boto3
 from lib import crud2 as crud
 from lib import models
+from lib import dynamodb as db
 from enum import StrEnum, auto
 
 TABLE = boto3.resource("dynamodb").Table("songs_v2")
@@ -14,6 +16,73 @@ class Kind(StrEnum):
     composer = auto()
     collection = auto()
     song = auto()
+
+
+@strawberry.interface
+class Record:
+    """This name is mega generic but hey"""
+
+    pk: strawberry.Private[str]
+    sk: strawberry.Private[str]
+
+    name: str
+
+    # not sure whether this is nice or not
+    # basically, having these here allows to construct
+    # the records directly form searches. Explicit would
+    # prbably be better
+    search_name: strawberry.Private[str | None] = None
+    random: strawberry.Private[Decimal | None] = None
+
+    @strawberry.field
+    def id(self) -> int:
+        return int(self.sk.split(":")[1])
+
+
+@strawberry.type
+class NewSong(Record):
+    tones: str
+
+    @strawberry.field
+    def opus(self) -> str:
+        return resolve_opus(self.tones)
+
+
+@strawberry.interface
+class Group:
+    @strawberry.field
+    def songs(self) -> list[NewSong]:
+        songs = db.memberships(self.sk)
+
+        return [NewSong(**song) for song in songs]
+
+
+@strawberry.type
+class NewComposer(Record, Group):
+    first_name: str | None = None
+    last_name: str
+
+
+@strawberry.type
+class NewCollection(Record, Group):
+    pass
+
+
+def get_one_of_kind(kind: db.Kind, id: int):
+    sk = f"{kind}:{id}"
+    return db.get_item(kind, sk)
+
+
+def get_new_song(id: int) -> NewSong:
+    return NewSong(**get_one_of_kind(db.Kind.song, id))
+
+
+def get_new_composer(id: int) -> NewComposer:
+    return NewComposer(**get_one_of_kind(db.Kind.composer, id))
+
+
+def get_new_collection(id: int) -> NewCollection:
+    return NewCollection(**get_one_of_kind(db.Kind.collection, id))
 
 
 @strawberry.interface
@@ -129,6 +198,16 @@ class Query:
     song: Song = strawberry.field(resolver=get_song)
     composer: Composer = strawberry.field(resolver=get_composer)
     collection: Collection = strawberry.field(resolver=get_collection)
+
+    newsong: NewSong = strawberry.field(resolver=get_new_song)
+    newcomp: NewComposer = strawberry.field(resolver=get_new_composer)
+    newcoll: NewCollection = strawberry.field(resolver=get_new_collection)
+
+    @strawberry.field
+    def new_random(self) -> NewSong:
+        item = db.random(db.Kind.song)
+
+        return NewSong(**item)
 
     @strawberry.field
     def search(self, kind: Kind, string: str) -> list[Searchable]:
