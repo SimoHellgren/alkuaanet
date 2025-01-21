@@ -7,7 +7,8 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 # TODO: consider managing table name or arn in a configuration file
-TABLE = boto3.resource("dynamodb").Table("songs_v2")
+RESOURCE = boto3.resource("dynamodb")
+TABLE = RESOURCE.Table("songs_v2")
 
 SEARCH_INDEX = "search_index"
 REVERSE_INDEX = "reverse_index"
@@ -25,6 +26,22 @@ def get_item(pk: str, sk: str) -> dict | None:
     result = TABLE.get_item(Key={"pk": pk, "sk": sk})
 
     return result.get("Item")
+
+
+def batch_get(keys: list[dict]) -> list[dict]:
+    batch_keys = {TABLE.table_name: {"Keys": keys}}
+
+    response = RESOURCE.batch_get_item(RequestItems=batch_keys)
+
+    return response["Responses"].get(TABLE.table_name, [])
+
+
+def batch_delete(keys: list[dict]) -> list[dict]:
+
+    with TABLE.batch_writer() as batch:
+        responses = [batch.delete_item(Key=key) for key in keys]
+
+    return responses
 
 
 def list_kind(kind: Kind) -> list[dict]:
