@@ -1,4 +1,5 @@
 from decimal import Decimal
+import random as rand
 import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
@@ -96,7 +97,6 @@ def resolve_opus(tones: str):
 
 @strawberry.type
 class Query:
-
     opus: str = strawberry.field(resolver=resolve_opus)
     song: Song = strawberry.field(resolver=get_song)
     composer: Composer = strawberry.field(resolver=get_composer)
@@ -132,6 +132,141 @@ class Query:
         return [model(**record) for record in records]
 
 
-schema = strawberry.Schema(query=Query)
+@strawberry.input
+class SongInput:
+    name: str
+    tones: str
+    composers: list[str] | None = None
+    collections: list[str] | None = None
+
+
+@strawberry.input
+class ComposerInput:
+    first_name: str | None = None
+    last_name: str
+
+
+@strawberry.type
+class Mutation:
+
+    @strawberry.mutation
+    def create_song(self, song: SongInput) -> Song:
+        song_id = db._get_next_id(Kind.song)
+
+        data_in = {
+            "pk": "song",
+            "sk": f"song:{song_id}",
+            "name": song.name,
+            "tones": song.tones,
+            "search_name": song.name.lower(),
+            "random": Decimal(str(rand.random())),
+        }
+
+        song_db = db.put(item=data_in)
+
+        return Song(**song_db)
+
+    @strawberry.mutation
+    def update_song(
+        self, id: int, name: str | None = None, tones: str | None = None
+    ) -> Song:
+
+        song = db.get_item(Kind.song, f"{Kind.song}:{id}")
+
+        song["name"] = name or song["name"]
+        song["search_name"] = song["name"].lower()
+        song["tones"] = tones or song["tones"]  # should check for existing opus here
+
+        new_song = db.put(song)
+
+        return Song(**new_song)
+
+    @strawberry.mutation
+    def delete_song(self, id: int) -> int:
+        db.delete(pk=Kind.song, sk=f"{Kind.song}:{id}")
+
+        return id
+
+    @strawberry.mutation
+    def create_composer(self, composer: ComposerInput) -> Composer:
+        composer_id = db._get_next_id(Kind.composer)
+
+        name = composer.last_name + (
+            f", {composer.first_name}" if composer.first_name else ""
+        )
+
+        data_in = {
+            "pk": "composer",
+            "sk": f"composer:{composer_id}",
+            "name": name,
+            "first_name": composer.first_name,
+            "last_name": composer.last_name,
+            "search_name": name.lower(),
+            "random": Decimal(str(rand.random())),
+        }
+
+        composer_db = db.put(data_in)
+
+        return Composer(**composer_db)
+
+    @strawberry.mutation
+    def update_composer(
+        self, id: int, first_name: str | None = None, last_name: str | None = None
+    ) -> Composer:
+        composer = db.get_item(Kind.composer, f"{Kind.composer}:{id}")
+
+        composer["first_name"] = first_name or composer["first_name"]
+        composer["last_name"] = last_name or composer["last_name"]
+        composer["name"] = composer["last_name"] + (
+            f", {composer['first_name']}" if composer["first_name"] else ""
+        )
+
+        composer["search_name"] = composer["name"].lower()
+
+        new_composer = db.put(composer)
+
+        return Composer(**new_composer)
+
+    @strawberry.mutation
+    def delete_composer(self, id: int) -> int:
+        db.delete(pk=Kind.composer, sk=f"{Kind.composer}:{id}")
+
+        return id
+
+    @strawberry.mutation
+    def create_collection(self, name: str) -> Collection:
+        collection_id = db._get_next_id(Kind.collection)
+
+        data_in = {
+            "pk": Kind.collection,
+            "sk": f"{Kind.collection}:{collection_id}",
+            "name": name,
+            "search_name": name.lower(),
+            "random": Decimal(str(rand.random())),
+        }
+
+        collection_db = db.put(data_in)
+
+        return Collection(**collection_db)
+
+    @strawberry.mutation
+    def update_collection(self, id: int, name: str) -> Collection:
+        collection = db.get_item(Kind.collection, f"{Kind.collection}:{id}")
+
+        collection["name"] = name
+        collection["search_name"] = name.lower()
+
+        new_collection = db.put(collection)
+
+        return Collection(**new_collection)
+
+    @strawberry.mutation
+    def delete_collection(self, id: int) -> int:
+        db.delete(pk=Kind.collection, sk=f"{Kind.collection}:{id}")
+
+        return id
+
+
+schema = strawberry.Schema(query=Query, mutation=Mutation)
 app = GraphQL(schema)
 handler = Mangum(app)
