@@ -3,6 +3,7 @@ import random as rand
 import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
+from lib import crud
 from lib import dynamodb as db
 from lib import opus
 from enum import StrEnum, auto
@@ -73,21 +74,19 @@ class Collection(Record, Group):
     pass
 
 
-def get_one_of_kind(kind: db.Kind, id: int):
-    sk = f"{kind}:{id}"
-    return db.get_item(kind, sk)
-
-
 def get_song(id: int) -> Song:
-    return Song(**get_one_of_kind(db.Kind.song, id))
+    obj = crud.read_song(id)
+    return Song(**obj.model_dump())
 
 
 def get_composer(id: int) -> Composer:
-    return Composer(**get_one_of_kind(db.Kind.composer, id))
+    obj = crud.read_composer(id)
+    return Composer(**obj.model_dump())
 
 
 def get_collection(id: int) -> Collection:
-    return Collection(**get_one_of_kind(db.Kind.collection, id))
+    obj = crud.read_collection(id)
+    return Collection(**obj.model_dump())
 
 
 def resolve_opus(tones: str):
