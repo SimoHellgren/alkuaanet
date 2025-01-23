@@ -20,6 +20,21 @@ class KeySchema(BaseModel):
     sk: str
 
 
+class Membership(KeySchema):
+    """A membership record connects Songs to Groups (Collections and Composers)"""
+
+    name: str
+    tones: str
+
+    @property
+    def group_id(self) -> int:
+        return int(self.pk.split(":")[1])
+
+    @property
+    def song_id(self) -> int:
+        return int(self.sk.split(":")[1])
+
+
 class Record(ModelType, KeySchema):
     """Granted, a bit of a generic name, but this is mostly to differentiate
     between the records relevant to the user (Song, Composer, Collection) and

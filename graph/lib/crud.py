@@ -2,7 +2,7 @@ from functools import partial
 from typing import Type
 
 from .models import CreateModelType, UpdateModelType, ModelType
-from .models import Song, Composer, Collection
+from .models import Song, Composer, Collection, Membership
 from . import dynamodb as db
 
 
@@ -58,6 +58,12 @@ def delete(id: int, model: Type[ModelType]) -> ModelType:
     return model(**db.delete(pk, sk))
 
 
+def get_group_songs(id: int, kind: str) -> list[Membership]:
+    items = db.get_partition(f"{kind}:{id}")
+
+    return [Membership(**item) for item in items]
+
+
 # these do not properly bind to the appropriate create and update types, but
 # this shall be considered later
 create_song = partial(create, model=Song)
@@ -71,9 +77,11 @@ read_composer = partial(read, model=Composer)
 read_all_composers = partial(read_all, model=Composer)
 update_composer = partial(update, model=Composer)
 delete_composer = partial(delete, model=Composer)
+get_composer_songs = partial(get_group_songs, kind="composer")
 
 create_collection = partial(create, model=Collection)
 read_collection = partial(read, model=Collection)
 read_all_collections = partial(read_all, model=Collection)
 update_collection = partial(update, model=Collection)
 delete_collection = partial(delete, model=Collection)
+get_collection_songs = partial(get_group_songs, kind="collection")

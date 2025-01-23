@@ -4,6 +4,7 @@ import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
 from lib import crud
+from lib.models import Membership
 from lib import dynamodb as db
 from lib import opus
 from enum import StrEnum, auto
@@ -50,17 +51,33 @@ class Song(Record):
 
 @strawberry.interface
 class Group:
-    @strawberry.field
-    def songs(self) -> list[Song]:
-        songs = db.memberships(self.sk)
+    """Would be nice to have a generic implementation, but that
+    would probably require a classvar for kind or something
+    """
 
-        return [Song(**song) for song in songs]
+    songs: list[Song]
+
+    @staticmethod
+    def _song_from_membership(membership: Membership) -> Song:
+
+        data = {
+            **membership.model_dump(),
+            "pk": "song",  # override <group>:<id> from membership
+        }
+
+        return Song(**data)
 
 
 @strawberry.type
 class Composer(Record, Group):
     first_name: str | None = None
     last_name: str
+
+    @strawberry.field
+    def songs(self) -> list[Song]:
+        songs = crud.get_composer_songs(self.id())
+
+        return [self._song_from_membership(song) for song in songs]
 
     @classmethod
     def from_searchresult(cls, data: dict):
@@ -71,7 +88,11 @@ class Composer(Record, Group):
 
 @strawberry.type
 class Collection(Record, Group):
-    pass
+    @strawberry.field
+    def songs(self) -> list[Song]:
+        songs = crud.get_collection_songs(self.id())
+
+        return [self._song_from_membership(song) for song in songs]
 
 
 def get_song(id: int) -> Song:
