@@ -249,6 +249,22 @@ class Mutation:
         db_collection = crud.delete_collection(id)
         return Collection(**db_collection.model_dump())
 
+    @strawberry.mutation
+    def add_membership(
+        self, kind: Kind, group_id: int, song_ids: list[int]
+    ) -> list[int]:
+        records = crud.create_memberships(kind, group_id, song_ids)
+
+        return [record.song_id for record in records]
+
+    @strawberry.mutation
+    def remove_membership(
+        self, kind: Kind, group_id: int, song_ids: list[int]
+    ) -> list[int]:
+        keys = crud.delete_memberships(kind, group_id, song_ids)
+
+        return [int(key["sk"].split(":")[1]) for key in keys]
+
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 app = GraphQL(schema)

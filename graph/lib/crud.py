@@ -90,3 +90,31 @@ read_all_collections = partial(read_all, model=Collection)
 update_collection = partial(update, model=Collection)
 delete_collection = partial(delete, model=Collection)
 get_collection_songs = partial(get_group_songs, kind="collection")
+
+
+def create_memberships(
+    kind: str, group_id: int, song_ids: list[int]
+) -> list[Membership]:
+    songs = db.batch_get([{"pk": "song", "sk": f"song:{id}"} for id in song_ids])
+
+    items = [
+        Membership(
+            pk=f"{kind}:{group_id}",
+            sk=song["sk"],
+            name=song["name"],
+            tones=song["tones"],
+        )
+        for song in songs
+    ]
+
+    db.batch_write([item.model_dump() for item in items])
+
+    return items
+
+
+def delete_memberships(kind: str, group_id: int, song_ids: list[int]) -> list[dict]:
+    deleted = db.batch_delete(
+        [{"pk": f"{kind}:{group_id}", "sk": f"song:{id}"} for id in song_ids]
+    )
+
+    return deleted

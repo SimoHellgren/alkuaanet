@@ -39,12 +39,21 @@ def batch_get(keys: list[dict]) -> list[dict]:
     return response["Responses"].get(TABLE.table_name, [])
 
 
+def batch_write(items: list[dict]) -> list[dict]:
+    with TABLE.batch_writer() as batch:
+        responses = [batch.put_item(Item=item) for item in items]
+
+    # put_item never returns any data, so we just return the items ¯\_(ツ)_/¯
+    return items
+
+
 def batch_delete(keys: list[dict]) -> list[dict]:
 
     with TABLE.batch_writer() as batch:
         responses = [batch.delete_item(Key=key) for key in keys]
 
-    return responses
+    # delete_item doesn't return data, so we just return the keys
+    return keys
 
 
 def get_partition(pk: str) -> list[dict]:
