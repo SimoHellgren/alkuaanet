@@ -1,3 +1,5 @@
+"""It is debatable whether this should be its own module or a part of crud.py"""
+
 import json
 import boto3
 from . import dynamodb as db
