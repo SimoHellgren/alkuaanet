@@ -124,9 +124,9 @@ class Query:
 
     @strawberry.field
     def random_song(self) -> Song:
-        item = db.random(db.Kind.song)
+        item = crud.get_random_song()
 
-        return Song(**item)
+        return Song(**item.model_dump())
 
     @strawberry.field
     def search(self, kind: Kind, string: str) -> list[Record]:

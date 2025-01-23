@@ -72,6 +72,11 @@ read_all_songs = partial(read_all, model=Song)
 update_song = partial(update, model=Song)
 delete_song = partial(delete, model=Song)
 
+
+def get_random_song() -> Song:
+    return Song(**db.random("song"))
+
+
 create_composer = partial(create, model=Composer)
 read_composer = partial(read, model=Composer)
 read_all_composers = partial(read_all, model=Composer)
