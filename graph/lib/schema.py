@@ -1,11 +1,9 @@
 from decimal import Decimal
-import random as rand
 import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
 from lib import crud
 from lib import models
-from lib import dynamodb as db
 from lib import opus
 from enum import StrEnum, auto
 
@@ -80,10 +78,10 @@ class Composer(Record, Group):
         return [self._song_from_membership(song) for song in songs]
 
     @classmethod
-    def from_searchresult(cls, data: dict):
-        last, _, first = data["name"].partition(", ")
+    def from_searchresult(cls, data: models.SearchResult):
+        last, _, first = data.name.partition(", ")
 
-        return cls(**data, last_name=last, first_name=first or None)
+        return cls(**data.model_dump(), last_name=last, first_name=first or None)
 
 
 @strawberry.type
@@ -130,26 +128,25 @@ class Query:
 
     @strawberry.field
     def search(self, kind: Kind, string: str) -> list[Record]:
-        if not string:
-            # `kind` is technically of the wrong type for db.list_kind
-            records = sorted(db.get_partition(kind), key=lambda x: x["name"])
+        mapping = {
+            Kind.song: (Song, crud.read_all_songs),
+            Kind.composer: (Composer, crud.read_all_composers),
+            Kind.collection: (Collection, crud.read_all_collections),
+        }
 
+        model, get_all = mapping[kind]
+
+        if not string:
+            records = sorted(get_all(), key=lambda x: x.name)
         else:
-            records = db.search(kind, string)
+            records = crud.search(kind, string)
 
             # a bit janky to do this here, but oh well
             if kind == Kind.composer:
                 return [Composer.from_searchresult(record) for record in records]
 
-        mapping = {
-            Kind.song: Song,
-            Kind.composer: Composer,
-            Kind.collection: Collection,
-        }
-
-        model = mapping[kind]
-
-        return [model(**record) for record in records]
+        # autocompletion / typing not working here due to using partial in crud
+        return [model(**record.model_dump()) for record in records]
 
 
 @strawberry.input

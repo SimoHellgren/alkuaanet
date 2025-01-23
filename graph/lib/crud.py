@@ -2,8 +2,14 @@ from functools import partial
 from typing import Type
 
 from .models import CreateModelType, UpdateModelType, ModelType
-from .models import Song, Composer, Collection, Membership
+from .models import Song, Composer, Collection, Membership, SearchResult
 from . import dynamodb as db
+
+
+def search(kind: str, string: str) -> SearchResult:
+    items = db.search(kind, string)
+
+    return [SearchResult(**item) for item in items]
 
 
 def create(data: CreateModelType, model: Type[ModelType]) -> ModelType:
