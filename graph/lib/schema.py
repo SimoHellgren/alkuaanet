@@ -166,6 +166,11 @@ class ComposerInput:
     last_name: str
 
 
+@strawberry.input
+class CollectionInput:
+    name: str
+
+
 @strawberry.type
 class Mutation:
 
@@ -180,7 +185,6 @@ class Mutation:
 
     @strawberry.mutation
     def update_song(self, id: int, name: str, tones: str) -> Song:
-
         song_model = models.SongUpdate(
             name=name,
             tones=tones,
@@ -198,82 +202,52 @@ class Mutation:
 
     @strawberry.mutation
     def create_composer(self, composer: ComposerInput) -> Composer:
-        composer_id = db._get_next_id(Kind.composer)
+        composerdict = strawberry.asdict(composer)
+        composer_model = models.ComposerCreate(**composerdict)
 
-        name = composer.last_name + (
-            f", {composer.first_name}" if composer.first_name else ""
-        )
+        db_composer = crud.create_composer(composer_model)
 
-        data_in = {
-            "pk": "composer",
-            "sk": f"composer:{composer_id}",
-            "name": name,
-            "first_name": composer.first_name,
-            "last_name": composer.last_name,
-            "search_name": name.lower(),
-            "random": Decimal(str(rand.random())),
-        }
-
-        composer_db = db.put(data_in)
-
-        return Composer(**composer_db)
+        return Composer(**db_composer.model_dump())
 
     @strawberry.mutation
     def update_composer(
-        self, id: int, first_name: str | None = None, last_name: str | None = None
+        self, id: int, first_name: str | None, last_name: str
     ) -> Composer:
-        composer = db.get_item(Kind.composer, f"{Kind.composer}:{id}")
-
-        composer["first_name"] = first_name or composer["first_name"]
-        composer["last_name"] = last_name or composer["last_name"]
-        composer["name"] = composer["last_name"] + (
-            f", {composer['first_name']}" if composer["first_name"] else ""
+        composer_model = models.ComposerUpdate(
+            first_name=first_name, last_name=last_name
         )
 
-        composer["search_name"] = composer["name"].lower()
+        db_composer = crud.update_composer(id, composer_model)
 
-        new_composer = db.put(composer)
-
-        return Composer(**new_composer)
+        return Composer(**db_composer.model_dump())
 
     @strawberry.mutation
-    def delete_composer(self, id: int) -> int:
-        db.delete(pk=Kind.composer, sk=f"{Kind.composer}:{id}")
+    def delete_composer(self, id: int) -> Composer:
+        db_composer = crud.delete_composer(id)
 
-        return id
+        return Composer(**db_composer.model_dump())
 
     @strawberry.mutation
-    def create_collection(self, name: str) -> Collection:
-        collection_id = db._get_next_id(Kind.collection)
+    def create_collection(self, collection: CollectionInput) -> Collection:
+        collectiondict = strawberry.asdict(collection)
+        collection_model = models.CollectionCreate(**collectiondict)
 
-        data_in = {
-            "pk": Kind.collection,
-            "sk": f"{Kind.collection}:{collection_id}",
-            "name": name,
-            "search_name": name.lower(),
-            "random": Decimal(str(rand.random())),
-        }
+        db_collection = crud.create_collection(collection_model)
 
-        collection_db = db.put(data_in)
-
-        return Collection(**collection_db)
+        return Collection(**db_collection.model_dump())
 
     @strawberry.mutation
     def update_collection(self, id: int, name: str) -> Collection:
-        collection = db.get_item(Kind.collection, f"{Kind.collection}:{id}")
+        collection_model = models.CollectionUpdate(name=name)
 
-        collection["name"] = name
-        collection["search_name"] = name.lower()
+        db_collection = crud.update_collection(id, collection_model)
 
-        new_collection = db.put(collection)
-
-        return Collection(**new_collection)
+        return Collection(**db_collection.model_dump())
 
     @strawberry.mutation
-    def delete_collection(self, id: int) -> int:
-        db.delete(pk=Kind.collection, sk=f"{Kind.collection}:{id}")
-
-        return id
+    def delete_collection(self, id: int) -> Collection:
+        db_collection = crud.delete_collection(id)
+        return Collection(**db_collection.model_dump())
 
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
