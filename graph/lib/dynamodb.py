@@ -118,8 +118,7 @@ def put(item: dict) -> dict:
 def delete(pk: str, sk: str) -> dict:
     deleted = TABLE.delete_item(Key={"pk": pk, "sk": sk}, ReturnValues="ALL_OLD")
 
-    # TODO: ensure that this record makes sense
-    return deleted
+    return deleted["Attributes"]
 
 
 def _peek_sequence(kind: Kind) -> int:

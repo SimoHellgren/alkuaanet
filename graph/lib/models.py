@@ -1,14 +1,15 @@
 from decimal import Decimal
-from functools import partial
+
 import random
-from typing import ClassVar, Protocol, Type, TypeVar
+from typing import ClassVar, TypeVar
 from pydantic import BaseModel, computed_field, Field
 
 
 CreateModelType = TypeVar("CreateModelType", bound=BaseModel)
+UpdateModelType = TypeVar("UpdateModelType", bound=BaseModel)
 
 
-class ModelType(Protocol):
+class ModelType(BaseModel):
     __kind__: ClassVar[str]
 
 
@@ -19,7 +20,7 @@ class KeySchema(BaseModel):
     sk: str
 
 
-class Record(KeySchema):
+class Record(ModelType, KeySchema):
     """Granted, a bit of a generic name, but this is mostly to differentiate
     between the records relevant to the user (Song, Composer, Collection) and
     the internal things (like opus, membership, sequence)
@@ -28,7 +29,7 @@ class Record(KeySchema):
     name: str
     random: Decimal
 
-    @computed_field
+    # @computed_field # commented out, since should be exluded from dumps
     @property
     def id(self) -> int:
         return int(self.sk.split(":")[1])
@@ -89,49 +90,22 @@ class CollectionCreate(RecordCreate):
     name: str
 
 
-# crud stuff - shall be moved eventually
-from . import dynamodb as db
+# update models require that you specify all editable attributes,
+# at least for now.
+class SongUpdate(BaseModel):
+    name: str
+    tones: str
 
 
-def create(data: CreateModelType, model: Type[ModelType]) -> ModelType:
-    # get the id and form pk & sk
-    kind = model.__kind__
-    # id = db._get_next_id(kind)
-    id = 123
-    pk = kind
-    sk = f"{kind}:{id}"
+class ComposerUpdate(BaseModel):
+    first_name: str | None
+    last_name: str
 
-    item_in = model(**data.model_dump(), pk=pk, sk=sk)
-
-    # db.put(...)
-
-    return item_in
+    @computed_field
+    @property
+    def name(self) -> str:
+        return self.last_name + (f", {self.first_name}" if self.first_name else "")
 
 
-def read(id: int, model: Type[ModelType]) -> ModelType:
-    pk = model.__kind__
-    sk = f"{pk}:{id}"
-    item = db.get_item(pk, sk)
-
-    return model(**item)
-
-
-def update():
-    raise NotImplementedError
-
-
-def delete(id: int, model: Type[ModelType]) -> ModelType:
-    pk = model.__kind__
-    sk = f"{pk}:{id}"
-
-    print("Would now delete", pk, sk)
-    # return model(**db.delete(pk, sk))
-
-
-create_song = partial(create, model=Song)
-create_composer = partial(create, model=Composer)
-create_collection = partial(create, model=Collection)
-
-read_song = partial(read, model=Song)
-read_composer = partial(read, model=Composer)
-read_collection = partial(read, model=Collection)
+class CollectionUpdate(BaseModel):
+    name: str
