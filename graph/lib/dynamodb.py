@@ -1,4 +1,7 @@
-"""Wrapper module around boto3 to simplify interaction with the db"""
+"""Wrapper module around boto3 to simplify interaction with the db.
+Mostly meant to simplify calls by hiding implementation details of the
+particular DynamoDB table implementation, while still being relatively thin.
+"""
 
 from decimal import Decimal
 import random as rand
@@ -44,9 +47,9 @@ def batch_delete(keys: list[dict]) -> list[dict]:
     return responses
 
 
-def list_kind(kind: Kind) -> list[dict]:
-    """Get all items of a kind"""
-    result = TABLE.query(KeyConditionExpression=Key("pk").eq(kind))
+def get_partition(pk: str) -> list[dict]:
+    """Get all items in a partition"""
+    result = TABLE.query(KeyConditionExpression=Key("pk").eq(pk))
 
     return result.get("Items", [])
 
@@ -97,18 +100,7 @@ def random(kind: Kind) -> dict:
     return item
 
 
-# TODO: ponder on the questions posed in the docstring
 def put(item: dict) -> dict:
-    """This wrapper is very thin, but useful at least as a closure for TABLE.
-    Used for both creation and updating (whole) records.
-
-    The question is: should this module aim at being super generic and not know anything about the
-    implementation of the models? Or should it know stuff like generating id's when creating records
-    of certain `kind` (or even that `kind` exists at all)? Maybe it should be something in between.
-    DynamoDB is by nature always very implementation-bound, so perhaps this module should just
-    acknowledge that. A crud module might then just implement a nicer interface for the API to call.
-    """
-
     response = TABLE.put_item(Item=item)
 
     # TODO: might want to check for errors here

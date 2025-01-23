@@ -29,6 +29,12 @@ def read(id: int, model: Type[ModelType]) -> ModelType:
     return model(**item)
 
 
+def read_all(model: Type[ModelType]) -> ModelType:
+    items = db.get_partition(model.__kind__)
+
+    return [model(**item) for item in items]
+
+
 def update(id: int, data: UpdateModelType, model: Type[ModelType]) -> ModelType:
     kind = model.__kind__
     db_record = db.get_item(kind, f"{kind}:{id}")
@@ -61,6 +67,10 @@ create_collection = partial(create, model=Collection)
 read_song = partial(read, model=Song)
 read_composer = partial(read, model=Composer)
 read_collection = partial(read, model=Collection)
+
+read_all_songs = partial(read_all, model=Song)
+read_all_composers = partial(read_all, model=Composer)
+read_all_collections = partial(read_all, model=Collection)
 
 update_song = partial(update, model=Song)
 update_composer = partial(update, model=Composer)

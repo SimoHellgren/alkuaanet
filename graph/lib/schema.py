@@ -111,7 +111,7 @@ class Query:
     def search(self, kind: Kind, string: str) -> list[Record]:
         if not string:
             # `kind` is technically of the wrong type for db.list_kind
-            records = sorted(db.list_kind(kind), key=lambda x: x["name"])
+            records = sorted(db.get_partition(kind), key=lambda x: x["name"])
 
         else:
             records = db.search(kind, string)
