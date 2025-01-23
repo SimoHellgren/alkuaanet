@@ -4,7 +4,7 @@ import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
 from lib import crud
-from lib.models import Membership
+from lib import models
 from lib import dynamodb as db
 from lib import opus
 from enum import StrEnum, auto
@@ -58,7 +58,7 @@ class Group:
     songs: list[Song]
 
     @staticmethod
-    def _song_from_membership(membership: Membership) -> Song:
+    def _song_from_membership(membership: models.Membership) -> Song:
 
         data = {
             **membership.model_dump(),
@@ -156,8 +156,8 @@ class Query:
 class SongInput:
     name: str
     tones: str
-    composers: list[str] | None = None
-    collections: list[str] | None = None
+    # composers: list[str] | None = None
+    # collections: list[str] | None = None
 
 
 @strawberry.input
@@ -171,41 +171,30 @@ class Mutation:
 
     @strawberry.mutation
     def create_song(self, song: SongInput) -> Song:
-        song_id = db._get_next_id(Kind.song)
+        songdict = strawberry.asdict(song)
+        song_model = models.SongCreate(**songdict)
 
-        data_in = {
-            "pk": "song",
-            "sk": f"song:{song_id}",
-            "name": song.name,
-            "tones": song.tones,
-            "search_name": song.name.lower(),
-            "random": Decimal(str(rand.random())),
-        }
+        db_song = crud.create_song(song_model)
 
-        song_db = db.put(item=data_in)
-
-        return Song(**song_db)
+        return Song(**db_song.model_dump())
 
     @strawberry.mutation
-    def update_song(
-        self, id: int, name: str | None = None, tones: str | None = None
-    ) -> Song:
+    def update_song(self, id: int, name: str, tones: str) -> Song:
 
-        song = db.get_item(Kind.song, f"{Kind.song}:{id}")
+        song_model = models.SongUpdate(
+            name=name,
+            tones=tones,
+        )
 
-        song["name"] = name or song["name"]
-        song["search_name"] = song["name"].lower()
-        song["tones"] = tones or song["tones"]  # should check for existing opus here
+        db_song = crud.update_song(id, song_model)
 
-        new_song = db.put(song)
-
-        return Song(**new_song)
+        return Song(**db_song.model_dump())
 
     @strawberry.mutation
-    def delete_song(self, id: int) -> int:
-        db.delete(pk=Kind.song, sk=f"{Kind.song}:{id}")
+    def delete_song(self, id: int) -> Song:
+        db_song = crud.delete_song(id)
 
-        return id
+        return Song(**db_song.model_dump())
 
     @strawberry.mutation
     def create_composer(self, composer: ComposerInput) -> Composer:
