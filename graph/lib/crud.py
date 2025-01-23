@@ -61,21 +61,19 @@ def delete(id: int, model: Type[ModelType]) -> ModelType:
 # these do not properly bind to the appropriate create and update types, but
 # this shall be considered later
 create_song = partial(create, model=Song)
-create_composer = partial(create, model=Composer)
-create_collection = partial(create, model=Collection)
-
 read_song = partial(read, model=Song)
-read_composer = partial(read, model=Composer)
-read_collection = partial(read, model=Collection)
-
 read_all_songs = partial(read_all, model=Song)
-read_all_composers = partial(read_all, model=Composer)
-read_all_collections = partial(read_all, model=Collection)
-
 update_song = partial(update, model=Song)
-update_composer = partial(update, model=Composer)
-update_collection = partial(update, model=Collection)
-
 delete_song = partial(delete, model=Song)
+
+create_composer = partial(create, model=Composer)
+read_composer = partial(read, model=Composer)
+read_all_composers = partial(read_all, model=Composer)
+update_composer = partial(update, model=Composer)
 delete_composer = partial(delete, model=Composer)
+
+create_collection = partial(create, model=Collection)
+read_collection = partial(read, model=Collection)
+read_all_collections = partial(read_all, model=Collection)
+update_collection = partial(update, model=Collection)
 delete_collection = partial(delete, model=Collection)
