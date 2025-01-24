@@ -11,6 +11,10 @@ def get(tones: str) -> dict | None:
     return db.get_item("opus", tones)
 
 
+def exists(tones: str) -> bool:
+    return db.exists("opus", tones)
+
+
 def create(tones: str) -> None:
     tones_list = tones.split("-")
 

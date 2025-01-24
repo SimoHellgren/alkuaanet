@@ -24,6 +24,12 @@ class Kind(StrEnum):
     collection = auto()
 
 
+def exists(pk: str, sk: str) -> bool:
+    # limit return value to sk to save on bandwith
+    item = TABLE.get_item(Key={"pk": pk, "sk": sk}, ProjectionExpression="sk")
+    return "Item" in item
+
+
 def get_item(pk: str, sk: str) -> dict | None:
     """Get an item by the primary key"""
     result = TABLE.get_item(Key={"pk": pk, "sk": sk})

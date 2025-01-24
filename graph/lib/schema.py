@@ -178,6 +178,17 @@ class Mutation:
 
         db_song = crud.create_song(song_model)
 
+        # TODO: it would be really cool if this were async. Although,
+        # a user might request for the value already when creating, in which case async
+        # isn't really useful.
+        # check for opus and create if needed
+        if not opus.exists(song.tones):
+            print("Creating new opus for", song.tones)
+            opus.create(song.tones)
+            print("Created new opus for", song.tones)
+        else:
+            print("Found existing opus for", song.tones)
+
         return Song(**db_song.model_dump())
 
     @strawberry.mutation
