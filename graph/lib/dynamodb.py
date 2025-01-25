@@ -62,9 +62,10 @@ def batch_delete(keys: list[dict]) -> list[dict]:
     return keys
 
 
-def get_partition(pk: str) -> list[dict]:
+# not super excited about the kwargs here but eh
+def get_partition(pk: str, **kwargs) -> list[dict]:
     """Get all items in a partition"""
-    result = TABLE.query(KeyConditionExpression=Key("pk").eq(pk))
+    result = TABLE.query(KeyConditionExpression=Key("pk").eq(pk), **kwargs)
 
     return result.get("Items", [])
 

@@ -70,6 +70,15 @@ def get_group_songs(id: int, kind: str) -> list[Membership]:
     return [Membership(**item) for item in items]
 
 
+def delete_group_cascade(id: int, kind: str) -> int:
+    # using the lower-level ProjectionExpression here isn't all that nice
+    keys = db.get_partition(f"{kind}:{id}", ProjectionExpression="pk, sk")
+
+    db.batch_delete([*keys, {"pk": kind, "sk": f"{kind}:{id}"}])
+
+    return id
+
+
 # these do not properly bind to the appropriate create and update types, but
 # this shall be considered later
 create_song = partial(create, model=Song)
@@ -97,6 +106,7 @@ read_all_composers = partial(read_all, model=Composer)
 update_composer = partial(update, model=Composer)
 delete_composer = partial(delete, model=Composer)
 get_composer_songs = partial(get_group_songs, kind="composer")
+delete_composer_cascade = partial(delete_group_cascade, kind="composer")
 
 create_collection = partial(create, model=Collection)
 read_collection = partial(read, model=Collection)
@@ -104,6 +114,7 @@ read_all_collections = partial(read_all, model=Collection)
 update_collection = partial(update, model=Collection)
 delete_collection = partial(delete, model=Collection)
 get_collection_songs = partial(get_group_songs, kind="collection")
+delete_collection_cascade = partial(delete_group_cascade, kind="collection")
 
 
 def create_memberships(

@@ -246,10 +246,10 @@ class Mutation:
         return Composer(**db_composer.model_dump())
 
     @strawberry.mutation
-    def delete_composer(self, id: int) -> Composer:
-        db_composer = crud.delete_composer(id)
+    def delete_composer(self, id: int) -> int:
+        crud.delete_composer_cascade(id)
 
-        return Composer(**db_composer.model_dump())
+        return id
 
     @strawberry.mutation
     def create_collection(self, collection: CollectionInput) -> Collection:
@@ -269,9 +269,9 @@ class Mutation:
         return Collection(**db_collection.model_dump())
 
     @strawberry.mutation
-    def delete_collection(self, id: int) -> Collection:
-        db_collection = crud.delete_collection(id)
-        return Collection(**db_collection.model_dump())
+    def delete_collection(self, id: int) -> int:
+        crud.delete_collection_cascade(id)
+        return id
 
     @strawberry.mutation
     def add_membership(
