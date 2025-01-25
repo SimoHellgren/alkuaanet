@@ -11,7 +11,7 @@ NATURALS = {
 ACCIDENTALS = {"#": 1, "b": -1, "x": 2}
 
 
-def parse_note(note):
+def parse_note(note: str) -> float:
     tone, *accidents, octave = note
 
     return (
@@ -19,10 +19,10 @@ def parse_note(note):
     )
 
 
-def profile(tones):
+def profile(tones: list[str]) -> list[float]:
     first, *rest = map(parse_note, tones)
     return [0] + [tone - first for tone in rest]
 
 
-def is_hankkari(tones):
+def is_hankkari(tones: list[str]) -> bool:
     return profile(tones) == [0, -4, -9, -16]

@@ -1,4 +1,7 @@
-"""Wrapper module around boto3 to simplify interaction with the db"""
+"""Wrapper module around boto3 to simplify interaction with the db.
+Mostly meant to simplify calls by hiding implementation details of the
+particular DynamoDB table implementation, while still being relatively thin.
+"""
 
 from decimal import Decimal
 import random as rand
@@ -7,7 +10,8 @@ import boto3
 from boto3.dynamodb.conditions import Key
 
 # TODO: consider managing table name or arn in a configuration file
-TABLE = boto3.resource("dynamodb").Table("songs_v2")
+RESOURCE = boto3.resource("dynamodb")
+TABLE = RESOURCE.Table("songs_v2")
 
 SEARCH_INDEX = "search_index"
 REVERSE_INDEX = "reverse_index"
@@ -20,6 +24,12 @@ class Kind(StrEnum):
     collection = auto()
 
 
+def exists(pk: str, sk: str) -> bool:
+    # limit return value to sk to save on bandwith
+    item = TABLE.get_item(Key={"pk": pk, "sk": sk}, ProjectionExpression="sk")
+    return "Item" in item
+
+
 def get_item(pk: str, sk: str) -> dict | None:
     """Get an item by the primary key"""
     result = TABLE.get_item(Key={"pk": pk, "sk": sk})
@@ -27,9 +37,35 @@ def get_item(pk: str, sk: str) -> dict | None:
     return result.get("Item")
 
 
-def list_kind(kind: Kind) -> list[dict]:
-    """Get all items of a kind"""
-    result = TABLE.query(KeyConditionExpression=Key("pk").eq(kind))
+def batch_get(keys: list[dict]) -> list[dict]:
+    batch_keys = {TABLE.table_name: {"Keys": keys}}
+
+    response = RESOURCE.batch_get_item(RequestItems=batch_keys)
+
+    return response["Responses"].get(TABLE.table_name, [])
+
+
+def batch_write(items: list[dict]) -> list[dict]:
+    with TABLE.batch_writer() as batch:
+        responses = [batch.put_item(Item=item) for item in items]
+
+    # put_item never returns any data, so we just return the items ¯\_(ツ)_/¯
+    return items
+
+
+def batch_delete(keys: list[dict]) -> list[dict]:
+
+    with TABLE.batch_writer() as batch:
+        responses = [batch.delete_item(Key=key) for key in keys]
+
+    # delete_item doesn't return data, so we just return the keys
+    return keys
+
+
+# not super excited about the kwargs here but eh
+def get_partition(pk: str, **kwargs) -> list[dict]:
+    """Get all items in a partition"""
+    result = TABLE.query(KeyConditionExpression=Key("pk").eq(pk), **kwargs)
 
     return result.get("Items", [])
 
@@ -46,6 +82,14 @@ def search(kind: Kind, string: str) -> dict | None:
         IndexName=SEARCH_INDEX,
         KeyConditionExpression=Key("pk").eq(kind)
         & Key("search_name").begins_with(string),
+    )
+
+    return result.get("Items")
+
+
+def reverse_index(sk: str) -> list[dict]:
+    result = TABLE.query(
+        IndexName=REVERSE_INDEX, KeyConditionExpression=Key("sk").eq(sk)
     )
 
     return result.get("Items")
@@ -80,18 +124,7 @@ def random(kind: Kind) -> dict:
     return item
 
 
-# TODO: ponder on the questions posed in the docstring
 def put(item: dict) -> dict:
-    """This wrapper is very thin, but useful at least as a closure for TABLE.
-    Used for both creation and updating (whole) records.
-
-    The question is: should this module aim at being super generic and not know anything about the
-    implementation of the models? Or should it know stuff like generating id's when creating records
-    of certain `kind` (or even that `kind` exists at all)? Maybe it should be something in between.
-    DynamoDB is by nature always very implementation-bound, so perhaps this module should just
-    acknowledge that. A crud module might then just implement a nicer interface for the API to call.
-    """
-
     response = TABLE.put_item(Item=item)
 
     # TODO: might want to check for errors here
@@ -101,8 +134,7 @@ def put(item: dict) -> dict:
 def delete(pk: str, sk: str) -> dict:
     deleted = TABLE.delete_item(Key={"pk": pk, "sk": sk}, ReturnValues="ALL_OLD")
 
-    # TODO: ensure that this record makes sense
-    return deleted
+    return deleted["Attributes"]
 
 
 def _peek_sequence(kind: Kind) -> int:

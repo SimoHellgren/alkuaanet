@@ -1,3 +1,5 @@
+"""It is debatable whether this should be its own module or a part of crud.py"""
+
 import json
 import boto3
 from . import dynamodb as db
@@ -7,6 +9,10 @@ LAMBDA = boto3.client("lambda")
 
 def get(tones: str) -> dict | None:
     return db.get_item("opus", tones)
+
+
+def exists(tones: str) -> bool:
+    return db.exists("opus", tones)
 
 
 def create(tones: str) -> None:
