@@ -83,6 +83,14 @@ def get_random_song() -> Song:
     return Song(**db.random("song"))
 
 
+def delete_song_cascade(id: int) -> int:
+    keys = db.reverse_index(sk=f"song:{id}")
+
+    db.batch_delete(keys)
+
+    return id
+
+
 create_composer = partial(create, model=Composer)
 read_composer = partial(read, model=Composer)
 read_all_composers = partial(read_all, model=Composer)

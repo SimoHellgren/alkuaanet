@@ -86,6 +86,14 @@ def search(kind: Kind, string: str) -> dict | None:
     return result.get("Items")
 
 
+def reverse_index(sk: str) -> list[dict]:
+    result = TABLE.query(
+        IndexName=REVERSE_INDEX, KeyConditionExpression=Key("sk").eq(sk)
+    )
+
+    return result.get("Items")
+
+
 def _random(kind: Kind) -> dict | None:
     """Try getting a random record. Doesn't necessarily return a record due to
     the way things are implemented in the db.

@@ -218,10 +218,11 @@ class Mutation:
         return Song(**db_song.model_dump())
 
     @strawberry.mutation
-    def delete_song(self, id: int) -> Song:
-        db_song = crud.delete_song(id)
+    def delete_song(self, id: int) -> int:
+        """Deletes song and all it's memberships"""
+        result = crud.delete_song_cascade(id)
 
-        return Song(**db_song.model_dump())
+        return result
 
     @strawberry.mutation
     def create_composer(self, composer: ComposerInput) -> Composer:
