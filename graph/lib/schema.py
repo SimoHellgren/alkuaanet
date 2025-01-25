@@ -5,6 +5,7 @@ from mangum import Mangum
 from lib import crud
 from lib import models
 from lib import opus
+from lib.hankkari import is_hankkari
 from enum import StrEnum, auto
 
 
@@ -26,7 +27,7 @@ class Record:
 
     # not sure whether this is nice or not
     # basically, having these here allows to construct
-    # the records directly form searches. Explicit would
+    # the records directly from searches. Explicit would
     # probably be better
     search_name: strawberry.Private[str | None] = None
     random: strawberry.Private[Decimal | None] = None
@@ -153,8 +154,6 @@ class Query:
 class SongInput:
     name: str
     tones: str
-    # composers: list[str] | None = None
-    # collections: list[str] | None = None
 
 
 @strawberry.input
@@ -172,15 +171,18 @@ class CollectionInput:
 class Mutation:
 
     @strawberry.mutation
-    def create_song(self, song: SongInput) -> Song:
+    def create_song(
+        self,
+        song: SongInput,
+        composers: list[int] | None = None,
+        collections: list[int] | None = None,
+    ) -> Song:
+
         songdict = strawberry.asdict(song)
         song_model = models.SongCreate(**songdict)
 
         db_song = crud.create_song(song_model)
 
-        # TODO: it would be really cool if this were async. Although,
-        # a user might request for the value already when creating, in which case async
-        # isn't really useful.
         # check for opus and create if needed
         if not opus.exists(song.tones):
             print("Creating new opus for", song.tones)
@@ -188,6 +190,19 @@ class Mutation:
             print("Created new opus for", song.tones)
         else:
             print("Found existing opus for", song.tones)
+
+        # add to collections and composers
+        composers_ = composers or []
+        for composer in composers_:
+            crud.create_memberships(Kind.composer, composer, [db_song.id])
+
+        # add hankkari to collections set if it is
+        collections_ = set(collections or []) | (
+            {7} if is_hankkari(song.tones.split("-")) else set()
+        )
+
+        for collection in collections_:
+            crud.create_memberships(Kind.collection, collection, [db_song.id])
 
         return Song(**db_song.model_dump())
 
