@@ -225,11 +225,17 @@ class Mutation:
         return result
 
     @strawberry.mutation
-    def create_composer(self, composer: ComposerInput) -> Composer:
+    def create_composer(
+        self, composer: ComposerInput, songs: list[int] | None = None
+    ) -> Composer:
         composerdict = strawberry.asdict(composer)
         composer_model = models.ComposerCreate(**composerdict)
 
         db_composer = crud.create_composer(composer_model)
+
+        # add songs
+        songs_ = songs or []
+        crud.create_memberships(Kind.composer, db_composer.id, songs_)
 
         return Composer(**db_composer.model_dump())
 
@@ -252,11 +258,17 @@ class Mutation:
         return id
 
     @strawberry.mutation
-    def create_collection(self, collection: CollectionInput) -> Collection:
+    def create_collection(
+        self, collection: CollectionInput, songs: list[int] | None = None
+    ) -> Collection:
         collectiondict = strawberry.asdict(collection)
         collection_model = models.CollectionCreate(**collectiondict)
 
         db_collection = crud.create_collection(collection_model)
+
+        # add songs
+        songs_ = songs or []
+        crud.create_memberships(Kind.collection, db_collection.id, songs_)
 
         return Collection(**db_collection.model_dump())
 
