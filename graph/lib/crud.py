@@ -2,7 +2,7 @@ from functools import partial
 from typing import Type
 
 from .models import CreateModelType, UpdateModelType, ModelType
-from .models import Song, Composer, Collection, Membership, SearchResult
+from .models import Song, SongUpdate, Composer, Collection, Membership, SearchResult
 from . import dynamodb as db
 
 
@@ -90,6 +90,25 @@ delete_song = partial(delete, model=Song)
 
 def get_random_song() -> Song:
     return Song(**db.random("song"))
+
+
+def update_song_memberships(id: int, data: SongUpdate) -> int:
+    """Find the membership records for the song, and update them"""
+    results = db.reverse_index(sk=f"song:{id}")
+    records = [r for r in results if r["pk"] != "song"]
+    memberships = [
+        Membership(
+            pk=record["pk"],
+            sk=record["sk"],
+            name=data.name,
+            tones=data.tones,
+        )
+        for record in records
+    ]
+
+    db.batch_write([m.model_dump() for m in memberships])
+
+    return id
 
 
 def delete_song_cascade(id: int) -> int:

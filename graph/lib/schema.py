@@ -215,6 +215,10 @@ class Mutation:
 
         db_song = crud.update_song(id, song_model)
 
+        # ensure that membership records are updated as well
+        # (this is needed due to denormalization)
+        crud.update_song_memberships(id, song_model)
+
         return Song(**db_song.model_dump())
 
     @strawberry.mutation
