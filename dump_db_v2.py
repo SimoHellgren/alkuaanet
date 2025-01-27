@@ -8,8 +8,10 @@ from pathlib import Path
 import boto3
 import boto3.dynamodb.types
 
+TABLE_NAME = "songs_v2"
+TABLE_VERSION = 2
 RESOURCE = boto3.resource("dynamodb")
-TABLE = RESOURCE.Table("songs_v2")
+TABLE = RESOURCE.Table(TABLE_NAME)
 BASIC_KINDS = [
     "song",
     "composer",
@@ -69,7 +71,7 @@ if __name__ == "__main__":
     TARGET_FOLDER.mkdir(parents=True, exist_ok=True)
 
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%S")
-    FILE = TARGET_FOLDER / f"{timestamp}.json"
+    FILE = TARGET_FOLDER / f"{TABLE_NAME}_{timestamp}.json"
 
     data = {k: list(v) for k, v in sorted_groupby(get_data(), key=kind)}
 
@@ -77,6 +79,11 @@ if __name__ == "__main__":
         print(f"Found {len(records):>4} records of kind {k}")
 
     print(f"Total {sum(map(len, data.values())):>4} records")
+
+    data["__meta"] = {
+        "table_name": TABLE_NAME,
+        "table_version": 2,
+    }
 
     with open(FILE, "w") as f:
         json.dump(data, f, cls=Encoder)
