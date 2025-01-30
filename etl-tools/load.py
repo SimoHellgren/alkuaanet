@@ -2,7 +2,7 @@ import argparse
 from decimal import Decimal
 from pathlib import Path
 import json
-from core import Table, flatten, compose
+from core import TABLES, flatten, compose
 from transform import v1_to_v2
 
 
@@ -12,13 +12,6 @@ def load_dump(file: Path):
         data = json.load(f, parse_float=Decimal, parse_int=Decimal)
 
     return data
-
-
-# should move to core, probably
-TABLES = {
-    "songs": Table("songs", 1),
-    "songs_test": Table("songs_test", 2),
-}
 
 
 transformations = {

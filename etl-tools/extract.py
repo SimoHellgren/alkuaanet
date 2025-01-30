@@ -3,7 +3,7 @@ from datetime import datetime
 import json
 from pathlib import Path
 
-from core import Table, JSONEncoder, sorted_groupby
+from core import TABLES, JSONEncoder, sorted_groupby
 
 
 def kind_v1(record: dict) -> str:
@@ -34,10 +34,9 @@ def kind_v2(record: dict) -> str:
         return "membership"
 
 
-TABLES = {
-    "songs": (Table("songs", 1), kind_v1),
-    "songs_v2": (Table("songs_v2", 2), kind_v2),
-}
+# flip to make stuff work for now, but should really centralize this
+tables = {k: (a, b) for (k, a), b in zip(TABLES.items(), (kind_v1, kind_v2, kind_v2))}
+
 
 if __name__ == "__main__":
     THIS_FILE = Path(__file__)

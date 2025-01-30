@@ -62,3 +62,10 @@ class JSONEncoder(json.JSONEncoder):
         if isinstance(obj, boto3.dynamodb.types.Binary):
             return obj.value.decode("utf-8")
         return super().default(obj)
+
+
+TABLES = {
+    "songs": Table("songs", 1),
+    "songs_v2": Table("songs_v2", 2),
+    "songs_test": Table("songs_test", 2),
+}
