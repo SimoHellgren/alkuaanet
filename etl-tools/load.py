@@ -1,22 +1,8 @@
 import argparse
-from decimal import Decimal
 from pathlib import Path
-import json
-from core import TABLES, flatten, compose
-from transform import v1_to_v2
+from core import TABLES, load_dump, VersionNotFound
+from transform import upgrade
 
-
-def load_dump(file: Path):
-    with open(file) as f:
-        # parse numbers to Decimal, because that is what DynamoDB wants
-        data = json.load(f, parse_float=Decimal, parse_int=Decimal)
-
-    return data
-
-
-transformations = {
-    1: v1_to_v2,
-}
 
 if __name__ == "__main__":
     THIS_FILE = Path(__file__)
@@ -26,26 +12,31 @@ if __name__ == "__main__":
     )
 
     parser.add_argument("filename")
-    parser.add_argument("target_table", choices=TABLES.keys())
+    parser.add_argument("target_table", choices=TABLES)
+    parser.add_argument(
+        "-v",
+        "--targetversion",
+        type=int,
+        help="Specify target version. Used only when target table doesn't have one (e.g. with fresh tables) ",
+    )
     args = parser.parse_args()
 
-    data = load_dump(args.filename)
-    dump_version = int(data["__meta"]["table_version"])
+    print("Reading", args.filename)
+    dump = load_dump(args.filename)
 
     target_table = TABLES[args.target_table]
-    target_version = target_table.version
+    try:
+        target_version = target_table.version
+    except VersionNotFound:
+        if not args.targetversion:
+            raise VersionNotFound(
+                f"Target table {target_table.name} has no version information. Provide manually with -v {{num}}"
+            )
 
-    # get the needed transformations to bring data to the target version
-    needed_transformations = [
-        transformations.get(i) for i in range(dump_version, target_version)
-    ]
+        target_version = int(args.targetversion)
 
-    new_data = compose(*needed_transformations)(data)
+    print("Applying transformations")
+    new_data = upgrade(dump, target_version)
 
-    print(
-        f"Migrating from version {dump_version} to table {target_table.name}, version {target_version}"
-    )
-
-    data_in = list(flatten((vals for k, vals in new_data.items() if k != "__meta")))
-
-    target_table.populate(data_in)
+    print("Loading to", target_table.name)
+    target_table.populate(new_data)

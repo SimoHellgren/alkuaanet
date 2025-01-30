@@ -1,59 +1,21 @@
 import argparse
 from datetime import datetime
-import json
 from pathlib import Path
 
-from core import TABLES, JSONEncoder, sorted_groupby
-
-
-def kind_v1(record: dict) -> str:
-    if "type" in record:
-        return record["type"]
-
-    pk = record["pk"]
-
-    if pk == "sequence":
-        return "sequence"
-
-
-def kind_v2(record: dict) -> str:
-    """returns the kind of the record. Useful for groupby"""
-    pk: str = record["pk"]
-
-    # basic case where pk is e.g. song or composer
-    if pk in {
-        "song",
-        "composer",
-        "collection",
-        "opus",
-        "sequence",
-    }:
-        return pk
-
-    if pk.startswith("collection:") or pk.startswith("composer:"):
-        return "membership"
-
-
-# flip to make stuff work for now, but should really centralize this
-tables = {k: (a, b) for (k, a), b in zip(TABLES.items(), (kind_v1, kind_v2, kind_v2))}
+from core import TABLES
 
 
 if __name__ == "__main__":
     THIS_FILE = Path(__file__)
     parser = argparse.ArgumentParser(
         prog=f"py {THIS_FILE.name}",
-        description="Given a table name, dumps the data. Tables need to be registered in dump.py.",
+        description="Given a table name, dumps the data. Tables need to be registered in core.py.",
     )
 
-    parser.add_argument("table_name", choices=TABLES.keys())
+    parser.add_argument("table_name", choices=TABLES)
     args = parser.parse_args()
 
-    tablename = args.table_name
-
-    if tablename not in TABLES:
-        raise ValueError(f"`{tablename}` is not registered.")
-
-    table, kind = TABLES[tablename]
+    table = TABLES[args.table_name]
 
     TARGET_FOLDER = THIS_FILE.parent / "dumps"
     TARGET_FOLDER.mkdir(parents=True, exist_ok=True)
@@ -61,17 +23,4 @@ if __name__ == "__main__":
     timestamp = datetime.now().strftime("%Y-%m-%dT%H%M%S")
     FILE = TARGET_FOLDER / f"{table.name}_{timestamp}.json"
 
-    data = {k: list(v) for k, v in sorted_groupby(table.get_data(), key=kind)}
-
-    for k, records in data.items():
-        print(f"Found {len(records):>4} records of kind {k}")
-
-    print(f"Total {sum(map(len, data.values())):>4} records")
-
-    data["__meta"] = {
-        "table_name": table.name,
-        "table_version": table.version,
-    }
-
-    with open(FILE, "w") as f:
-        json.dump(data, f, cls=JSONEncoder)
+    table.dump(FILE)

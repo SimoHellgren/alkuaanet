@@ -2,53 +2,40 @@ from dataclasses import dataclass
 from decimal import Decimal
 from functools import cached_property, reduce
 from itertools import chain, groupby
+from pathlib import Path
+from typing import TypeAlias, Iterable, Generator
 import json
 import boto3
 import boto3.dynamodb.types
 
 
-class Table:
-    def __init__(self, name: str, version: int):
-        self.name = name
-        self.version = version
+class VersionNotFound(Exception):
+    pass
 
-    @cached_property
-    def resource(self):
-        return boto3.resource("dynamodb")
 
-    @cached_property
-    def table(self):
-        return self.resource.Table(self.name)
+Dump: TypeAlias = Iterable[dict]
 
-    # scan ends up being the best option because there isn't an easy way to query
-    # for all of the membership records in one go
-    def get_data(self):
-        i = 1
 
-        print("Getting page", i)
-        response = self.table.scan()
-        yield from response["Items"]
-        while key := response.get("LastEvaluatedKey"):
-            i += 1
-            print("Getting page", i)
-            response = self.table.scan(ExclusiveStartKey=key)
-            yield from response["Items"]
+def load_dump(file: Path) -> Dump:
+    with open(file) as f:
+        # parse numbers to Decimal, because that is what DynamoDB wants
+        data = json.load(f, parse_float=Decimal, parse_int=Decimal)
 
-    def populate(self, data: list[dict]):
-        with self.table.batch_writer() as batch:
-            for item in data:
-                batch.put_item(Item=item)
+    return data
 
 
 @dataclass
-class T2:
+class Table:
     name: str
 
     @cached_property
     def version(self) -> int:
         result = self.table.get_item(Key={"pk": "metadata", "sk": "table_version"})
-        value = result["Item"]["value"]
-        return int(value)
+        try:
+            value = result["Item"]["value"]
+            return int(value)
+        except KeyError:
+            raise VersionNotFound(f"Table {self.name} has no metadata for version.")
 
     @cached_property
     def resource(self):
@@ -60,7 +47,7 @@ class T2:
 
     # scan ends up being the best option because there isn't an easy way to query
     # for all of the membership records in one go
-    def get_data(self):
+    def get_data(self) -> Generator[dict, None, None]:
         i = 1
 
         print("Getting page", i)
@@ -72,13 +59,13 @@ class T2:
             response = self.table.scan(ExclusiveStartKey=key)
             yield from response["Items"]
 
-    def dump(self, filename: str):
+    def dump(self, filename: str) -> None:
         data = list(self.get_data())
 
         with open(filename, "w") as f:
             json.dump(data, f, cls=JSONEncoder)
 
-    def populate(self, data: list[dict]):
+    def populate(self, data: Iterable[dict]) -> None:
         with self.table.batch_writer() as batch:
             for item in data:
                 batch.put_item(Item=item)
@@ -109,17 +96,10 @@ class JSONEncoder(json.JSONEncoder):
         return super().default(obj)
 
 
-TABLES = {
-    "songs": Table("songs", 1),
-    "songs_v2": Table("songs_v2", 2),
-    "songs_test": Table("songs_test", 2),
-}
-
-
 table_names = (
     "songs",
     "songs_v2",
     "songs_test",
 )
 
-TABLES_2 = {name: T2(name) for name in table_names}
+TABLES = {name: Table(name) for name in table_names}
