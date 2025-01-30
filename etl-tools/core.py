@@ -1,6 +1,6 @@
 from decimal import Decimal
-from functools import cached_property
-from itertools import groupby
+from functools import cached_property, reduce
+from itertools import chain, groupby
 import json
 import boto3
 import boto3.dynamodb.types
@@ -41,6 +41,16 @@ class Table:
 
 def sorted_groupby(it, key):
     yield from groupby(sorted(it, key=key), key=key)
+
+
+flatten = chain.from_iterable
+
+
+def compose(*funcs):
+    if not funcs:
+        return lambda x: x
+
+    return reduce(lambda f, g: lambda x: f(g(x)), funcs)
 
 
 class JSONEncoder(json.JSONEncoder):

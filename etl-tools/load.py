@@ -1,13 +1,9 @@
 import argparse
 from decimal import Decimal
-from functools import reduce
-from itertools import chain
 from pathlib import Path
 import json
-from core import Table
+from core import Table, flatten, compose
 from transform import v1_to_v2
-
-flatten = chain.from_iterable
 
 
 def load_dump(file: Path):
@@ -16,13 +12,6 @@ def load_dump(file: Path):
         data = json.load(f, parse_float=Decimal, parse_int=Decimal)
 
     return data
-
-
-def compose(*funcs):
-    if not funcs:
-        return lambda x: x
-
-    return reduce(lambda f, g: lambda x: f(g(x)), funcs)
 
 
 # should move to core, probably

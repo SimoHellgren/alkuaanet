@@ -1,8 +1,6 @@
 from decimal import Decimal
-from itertools import chain
+from core import flatten
 from random import random
-
-flatten = chain.from_iterable
 
 
 def v1_to_v2(dump: dict):
