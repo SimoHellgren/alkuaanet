@@ -99,7 +99,6 @@ class JSONEncoder(json.JSONEncoder):
 table_names = (
     "songs",
     "songs_v2",
-    "songs_test",
 )
 
 TABLES = {name: Table(name) for name in table_names}
