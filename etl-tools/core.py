@@ -16,16 +16,26 @@ class VersionNotFound(Exception):
 Dump: TypeAlias = Iterable[dict]
 
 
+def object_hook(d):
+    if "opus" in d:
+        d["opus"] = d["opus"].encode()
+
+    return d
+
+
 def load_dump(file: Path) -> Dump:
     with open(file) as f:
         # parse numbers to Decimal, because that is what DynamoDB wants
-        data = json.load(f, parse_float=Decimal, parse_int=Decimal)
-
-        for row in data:
-            if row["pk"] != "opus":
-                continue
-
-            row["opus"] = row["opus"].encode()
+        # Also, convert opus to binary. Note: future schema changes could
+        # break this, if the structure of opus records changes. This might
+        # mean that this logic needs to be specific to the table_version.
+        # Another alternative is to customize serialization of binary data
+        # into some object like {"__binary__": ...}. Then it would just be possible
+        # to always convert all binary back, and not need to worry about the
+        # opus record's structure.
+        data = json.load(
+            f, parse_float=Decimal, parse_int=Decimal, object_hook=object_hook
+        )
 
     return data
 
