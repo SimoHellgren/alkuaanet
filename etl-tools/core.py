@@ -21,6 +21,12 @@ def load_dump(file: Path) -> Dump:
         # parse numbers to Decimal, because that is what DynamoDB wants
         data = json.load(f, parse_float=Decimal, parse_int=Decimal)
 
+        for row in data:
+            if row["pk"] != "opus":
+                continue
+
+            row["opus"] = row["opus"].encode()
+
     return data
 
 
