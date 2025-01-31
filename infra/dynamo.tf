@@ -58,7 +58,7 @@ resource "aws_dynamodb_table" "songs-table-v2" {
     name               = "search_index"
     range_key          = "search_name"
     projection_type    = "INCLUDE"
-    non_key_attributes = ["name"]
+    non_key_attributes = ["name", "tones"]
   }
 
   local_secondary_index {
