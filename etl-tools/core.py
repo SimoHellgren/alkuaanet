@@ -16,14 +16,6 @@ class VersionNotFound(Exception):
 Dump: TypeAlias = Iterable[dict]
 
 
-def load_dump(file: Path) -> Dump:
-    with open(file) as f:
-        # parse numbers to Decimal, because that is what DynamoDB wants
-        data = json.load(f, parse_float=Decimal, parse_int=Decimal)
-
-    return data
-
-
 @dataclass
 class Table:
     name: str
@@ -91,9 +83,30 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
+
+        # serialize with a custom structure for easier decoding
         if isinstance(obj, boto3.dynamodb.types.Binary):
-            return obj.value.decode("utf-8")
+            return {"__binary__": obj.value.decode("utf-8")}
+
         return super().default(obj)
+
+
+def load_dump(file: Path) -> Dump:
+    def object_hook(d):
+        """Converts binary structure to bytes (see JSONEncoder for counterpart)"""
+
+        if "__binary__" in d:
+            return d["__binary__"].encode("utf-8")
+
+        return d
+
+    with open(file) as f:
+        # parse numbers to Decimal, because that is what DynamoDB wants
+        data = json.load(
+            f, parse_float=Decimal, parse_int=Decimal, object_hook=object_hook
+        )
+
+    return data
 
 
 table_names = (

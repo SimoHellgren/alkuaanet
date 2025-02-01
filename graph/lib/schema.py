@@ -20,17 +20,15 @@ class Kind(StrEnum):
 class Record:
     """This name is mega generic but hey"""
 
+    # private fields not exposed in the API
     pk: strawberry.Private[str]
     sk: strawberry.Private[str]
+    # search_name and random are nullable, they are not present in membership
+    # records. See Group._song_from_membership for more info.
+    search_name: strawberry.Private[str | None]
+    random: strawberry.Private[Decimal | None]
 
     name: str
-
-    # not sure whether this is nice or not
-    # basically, having these here allows to construct
-    # the records directly from searches. Explicit would
-    # probably be better
-    search_name: strawberry.Private[str | None] = None
-    random: strawberry.Private[Decimal | None] = None
 
     @strawberry.field
     def id(self) -> int:
@@ -39,9 +37,7 @@ class Record:
 
 @strawberry.type
 class Song(Record):
-    # this being optional is only needed to facilitate searching.
-    # should add `tones` to the index projection in dynamo instead
-    tones: str | None = None
+    tones: str
 
     @strawberry.field
     def opus(self) -> str:
@@ -58,10 +54,23 @@ class Group:
 
     @staticmethod
     def _song_from_membership(membership: models.Membership) -> Song:
+        """Construct a Song from a membership record:
+        1. override pk (e.g. `composer:1`) with `song`
+        2. set search_name and random to null, since they are not needed here
+        """
+        # search_name and random are used to search and get random records.
+        # In the current context, we're listing e.g. a composer's songs, so
+        # we don't really need either. If for some reason you'd want to get
+        # a random song from a specific group or further search, you can simply
+        # filter the membership records, as their number isn't typically that
+        # large. If this were to ever become a problem, membership records
+        # would probably need to be amended with `random` and `search_name`
 
         data = {
             **membership.model_dump(),
-            "pk": "song",  # override <group>:<id> from membership
+            "pk": "song",
+            "search_name": None,
+            "random": None,
         }
 
         return Song(**data)
@@ -77,12 +86,6 @@ class Composer(Record, Group):
         songs = crud.get_composer_songs(self.id())
 
         return [self._song_from_membership(song) for song in songs]
-
-    @classmethod
-    def from_searchresult(cls, data: models.SearchResult):
-        last, _, first = data.name.partition(", ")
-
-        return cls(**data.model_dump(), last_name=last, first_name=first or None)
 
 
 @strawberry.type
@@ -130,21 +133,21 @@ class Query:
     @strawberry.field
     def search(self, kind: Kind, string: str) -> list[Record]:
         mapping = {
-            Kind.song: (Song, crud.read_all_songs),
-            Kind.composer: (Composer, crud.read_all_composers),
-            Kind.collection: (Collection, crud.read_all_collections),
+            Kind.song: (Song, crud.read_all_songs, crud.search_song),
+            Kind.composer: (Composer, crud.read_all_composers, crud.search_composer),
+            Kind.collection: (
+                Collection,
+                crud.read_all_collections,
+                crud.search_collection,
+            ),
         }
 
-        model, get_all = mapping[kind]
+        model, get_all, search_record = mapping[kind]
 
         if not string:
             records = sorted(get_all(), key=lambda x: x.name)
         else:
-            records = crud.search(kind, string)
-
-            # a bit janky to do this here, but oh well
-            if kind == Kind.composer:
-                return [Composer.from_searchresult(record) for record in records]
+            records = search_record(string)
 
         # autocompletion / typing not working here due to using partial in crud
         return [model(**record.model_dump()) for record in records]

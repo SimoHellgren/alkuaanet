@@ -20,11 +20,6 @@ class KeySchema(BaseModel):
     sk: str
 
 
-class SearchResult(KeySchema):
-    name: str
-    search_name: str
-
-
 class Membership(KeySchema):
     """A membership record connects Songs to Groups (Collections and Composers)"""
 
