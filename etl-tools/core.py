@@ -16,29 +16,6 @@ class VersionNotFound(Exception):
 Dump: TypeAlias = Iterable[dict]
 
 
-def load_dump(file: Path) -> Dump:
-    def object_hook(d):
-        """Converts opus strings to binary"""
-        # Note: future schema changes could break this, if the structure of
-        # opus records changes. This might mean that this logic needs to be
-        # specific to the table_version. Another alternative is to customize
-        # serialization of binary data into an object like {"__binary__": ...}.
-        # Then it would just be possible to always convert all binary and not
-        # need to worry about the opus record's structure.
-        if "opus" in d:
-            d["opus"] = d["opus"].encode()
-
-        return d
-
-    with open(file) as f:
-        # parse numbers to Decimal, because that is what DynamoDB wants
-        data = json.load(
-            f, parse_float=Decimal, parse_int=Decimal, object_hook=object_hook
-        )
-
-    return data
-
-
 @dataclass
 class Table:
     name: str
@@ -106,9 +83,30 @@ class JSONEncoder(json.JSONEncoder):
     def default(self, obj):
         if isinstance(obj, Decimal):
             return float(obj)
+
+        # serialize with a custom structure for easier decoding
         if isinstance(obj, boto3.dynamodb.types.Binary):
-            return obj.value.decode("utf-8")
+            return {"__binary__": obj.value.decode("utf-8")}
+
         return super().default(obj)
+
+
+def load_dump(file: Path) -> Dump:
+    def object_hook(d):
+        """Converts binary structure to bytes (see JSONEncoder for counterpart)"""
+
+        if "__binary__" in d:
+            return d["__binary__"].encode("utf-8")
+
+        return d
+
+    with open(file) as f:
+        # parse numbers to Decimal, because that is what DynamoDB wants
+        data = json.load(
+            f, parse_float=Decimal, parse_int=Decimal, object_hook=object_hook
+        )
+
+    return data
 
 
 table_names = (
