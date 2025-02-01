@@ -117,12 +117,28 @@ def resolve_opus(tones: str):
     return data["opus"].value.decode("utf-8")
 
 
+def get_many_songs(ids: list[int]) -> list[Song]:
+    return [Song(**item.model_dump()) for item in crud.read_many_songs(ids)]
+
+
+def get_many_composers(ids: list[int]) -> list[Composer]:
+    return [Composer(**item.model_dump()) for item in crud.read_many_comopsers(ids)]
+
+
+def get_many_collections(ids: list[int]) -> list[Collection]:
+    return [Collection(**item.model_dump()) for item in crud.read_many_collections(ids)]
+
+
 @strawberry.type
 class Query:
     opus: str = strawberry.field(resolver=resolve_opus)
     song: Song = strawberry.field(resolver=get_song)
     composer: Composer = strawberry.field(resolver=get_composer)
     collection: Collection = strawberry.field(resolver=get_collection)
+
+    songs: list[Song] = strawberry.field(resolver=get_many_songs)
+    composers: list[Composer] = strawberry.field(resolver=get_many_composers)
+    collections: list[Collection] = strawberry.field(resolver=get_many_collections)
 
     @strawberry.field
     def random_song(self) -> Song:
