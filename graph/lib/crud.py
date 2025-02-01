@@ -2,14 +2,14 @@ from functools import partial
 from typing import Type
 
 from .models import CreateModelType, UpdateModelType, ModelType
-from .models import Song, SongUpdate, Composer, Collection, Membership, SearchResult
+from .models import Song, SongUpdate, Composer, Collection, Membership
 from . import dynamodb as db
 
 
-def search(kind: str, string: str) -> SearchResult:
-    items = db.search(kind, string)
+def search(string: str, model: Type[ModelType]) -> ModelType:
+    items = db.search(model.__kind__, string)
 
-    return [SearchResult(**item) for item in items]
+    return [model(**item) for item in items]
 
 
 def create(data: CreateModelType, model: Type[ModelType]) -> ModelType:
@@ -86,6 +86,7 @@ read_song = partial(read, model=Song)
 read_all_songs = partial(read_all, model=Song)
 update_song = partial(update, model=Song)
 delete_song = partial(delete, model=Song)
+search_song = partial(search, model=Song)
 
 
 def get_random_song() -> Song:
@@ -126,6 +127,7 @@ update_composer = partial(update, model=Composer)
 delete_composer = partial(delete, model=Composer)
 get_composer_songs = partial(get_group_songs, kind="composer")
 delete_composer_cascade = partial(delete_group_cascade, kind="composer")
+search_composer = partial(search, model=Composer)
 
 create_collection = partial(create, model=Collection)
 read_collection = partial(read, model=Collection)
@@ -134,6 +136,7 @@ update_collection = partial(update, model=Collection)
 delete_collection = partial(delete, model=Collection)
 get_collection_songs = partial(get_group_songs, kind="collection")
 delete_collection_cascade = partial(delete_group_cascade, kind="collection")
+search_collection = partial(search, model=Collection)
 
 
 def create_memberships(
