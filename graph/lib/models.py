@@ -13,14 +13,14 @@ class ModelType(BaseModel):
     __kind__: ClassVar[str]
 
 
-class KeySchema(BaseModel):
+class Key(BaseModel):
     """Everything in the DynamoDB has a partition key and a sort key"""
 
     pk: str
     sk: str
 
 
-class Membership(KeySchema):
+class Membership(Key):
     """A membership record connects Songs to Groups (Collections and Composers)"""
 
     name: str
@@ -35,7 +35,7 @@ class Membership(KeySchema):
         return int(self.sk.split(":")[1])
 
 
-class Record(ModelType, KeySchema):
+class Record(ModelType, Key):
     """Granted, a bit of a generic name, but this is mostly to differentiate
     between the records relevant to the user (Song, Composer, Collection) and
     the internal things (like opus, membership, sequence)

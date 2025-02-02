@@ -1,4 +1,5 @@
 from decimal import Decimal
+from functools import cached_property
 import strawberry
 from strawberry.asgi import GraphQL
 from mangum import Mangum
@@ -42,6 +43,31 @@ class Song(Record):
     @strawberry.field
     def opus(self) -> str:
         return resolve_opus(self.tones)
+
+    @cached_property
+    def _memberships(self) -> list[tuple[str, int]]:
+        keys = crud.get_song_memberships(self.id())
+        split = (key.pk.split(":") for key in keys)
+
+        return [(kind, int(num)) for kind, num in split]
+
+    @strawberry.field
+    def composers(self) -> list["Composer"]:
+        ids = [i for k, i in self._memberships if k == "composer"]
+
+        if not ids:
+            return []
+
+        return get_many_composers(ids)
+
+    @strawberry.field
+    def collections(self) -> list["Collection"]:
+        ids = [i for k, i in self._memberships if k == "collection"]
+
+        if not ids:
+            return []
+
+        return get_many_collections(ids)
 
 
 @strawberry.interface

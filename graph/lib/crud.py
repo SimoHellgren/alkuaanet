@@ -2,7 +2,7 @@ from functools import partial
 from typing import Type
 
 from .models import CreateModelType, UpdateModelType, ModelType
-from .models import Song, SongUpdate, Composer, Collection, Membership
+from .models import Song, SongUpdate, Composer, Collection, Membership, Key
 from . import dynamodb as db
 
 
@@ -105,6 +105,17 @@ search_song = partial(search, model=Song)
 
 def get_random_song() -> Song:
     return Song(**db.random("song"))
+
+
+def get_song_memberships(id: int) -> list[Key]:
+    results = db.reverse_index(sk=f"song:{id}")
+    records = [r for r in results if r["pk"] != "song"]
+
+    if not records:
+        return []
+
+    keys = [Key(**record) for record in records]
+    return keys
 
 
 def update_song_memberships(id: int, data: SongUpdate) -> int:
