@@ -97,23 +97,38 @@ class Collection(Record, Group):
         return [self._song_from_membership(song) for song in songs]
 
 
-def get_song(id: int) -> Song:
+def get_song(id: int) -> Song | None:
     obj = crud.read_song(id)
+
+    if not obj:
+        return None
+
     return Song(**obj.model_dump())
 
 
-def get_composer(id: int) -> Composer:
+def get_composer(id: int) -> Composer | None:
     obj = crud.read_composer(id)
+
+    if not obj:
+        return None
+
     return Composer(**obj.model_dump())
 
 
-def get_collection(id: int) -> Collection:
+def get_collection(id: int) -> Collection | None:
     obj = crud.read_collection(id)
+
+    if not obj:
+        return None
+
     return Collection(**obj.model_dump())
 
 
-def resolve_opus(tones: str):
+def resolve_opus(tones: str) -> str | None:
     data = opus.get(tones)
+    if not data:
+        return None
+
     return data["opus"].value.decode("utf-8")
 
 
@@ -131,10 +146,10 @@ def get_many_collections(ids: list[int]) -> list[Collection]:
 
 @strawberry.type
 class Query:
-    opus: str = strawberry.field(resolver=resolve_opus)
-    song: Song = strawberry.field(resolver=get_song)
-    composer: Composer = strawberry.field(resolver=get_composer)
-    collection: Collection = strawberry.field(resolver=get_collection)
+    opus: str | None = strawberry.field(resolver=resolve_opus)
+    song: Song | None = strawberry.field(resolver=get_song)
+    composer: Composer | None = strawberry.field(resolver=get_composer)
+    collection: Collection | None = strawberry.field(resolver=get_collection)
 
     songs: list[Song] = strawberry.field(resolver=get_many_songs)
     composers: list[Composer] = strawberry.field(resolver=get_many_composers)

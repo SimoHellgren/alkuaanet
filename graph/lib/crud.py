@@ -27,10 +27,13 @@ def create(data: CreateModelType, model: Type[ModelType]) -> ModelType:
     return item_in
 
 
-def read(id: int, model: Type[ModelType]) -> ModelType:
+def read(id: int, model: Type[ModelType]) -> ModelType | None:
     pk = model.__kind__
     sk = f"{pk}:{id}"
     item = db.get_item(pk, sk)
+
+    if not item:
+        return None
 
     return model(**item)
 
