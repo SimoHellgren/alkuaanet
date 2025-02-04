@@ -289,6 +289,14 @@ class Mutation:
 
         db_song = crud.update_song(id, song_model)
 
+        # check for opus and create if needed
+        if not opus.exists(song_model.tones):
+            print("Creating new opus for", song_model.tones)
+            opus.create(song_model.tones)
+            print("Created new opus for", song_model.tones)
+        else:
+            print("Found existing opus for", song_model.tones)
+
         # ensure that membership records are updated as well
         # (this is needed due to denormalization)
         crud.update_song_memberships(id, song_model)
