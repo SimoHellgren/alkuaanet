@@ -94,6 +94,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
   function_name = "alkuaanet-graph-api"
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "lib.schema.handler"
+  timeout       = 15
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
