@@ -158,16 +158,30 @@ def resolve_opus(tones: str) -> str | None:
     return data["opus"].value.decode("utf-8")
 
 
-def get_many_songs(ids: list[int]) -> list[Song]:
-    return [Song(**item.model_dump()) for item in crud.read_many_songs(ids)]
+def get_many_songs(ids: list[int] | None = None) -> list[Song]:
+    if not ids:
+        songs = crud.read_all_songs()
+    else:
+        songs = crud.read_many_songs(ids)
+
+    return [Song(**item.model_dump()) for item in songs]
 
 
-def get_many_composers(ids: list[int]) -> list[Composer]:
-    return [Composer(**item.model_dump()) for item in crud.read_many_comopsers(ids)]
+def get_many_composers(ids: list[int] | None = None) -> list[Composer]:
+    if not ids:
+        composers = crud.read_all_composers()
+    else:
+        composers = crud.read_many_comopsers(ids)
+    return [Composer(**item.model_dump()) for item in composers]
 
 
-def get_many_collections(ids: list[int]) -> list[Collection]:
-    return [Collection(**item.model_dump()) for item in crud.read_many_collections(ids)]
+def get_many_collections(ids: list[int] | None = None) -> list[Collection]:
+    if not ids:
+        collections = crud.read_all_collections()
+    else:
+        collections = crud.read_many_collections(ids)
+
+    return [Collection(**item.model_dump()) for item in collections]
 
 
 @strawberry.type
