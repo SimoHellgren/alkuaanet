@@ -1,7 +1,6 @@
 """Utility for building lambda layers"""
 
 import argparse
-import sys
 import subprocess
 from pathlib import Path
 import shutil
