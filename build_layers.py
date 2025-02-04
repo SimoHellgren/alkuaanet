@@ -1,5 +1,6 @@
 """Utility for building lambda layers"""
 
+import argparse
 import sys
 import subprocess
 from pathlib import Path
@@ -15,72 +16,78 @@ handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 log.addHandler(handler)
 
-# get groups from command line
-groups = sys.argv[1:]
+GROUPS = [
+    "graph",
+    "telegram",
+]
 
-if not groups:
-    logging.info("No groups given!")
-    logging.info(f"Do something like:\n\tpy {sys.argv[0]} graph telegram")
-    exit(0)
-
-OUT_FOLDER = Path("infra/managed-files")
-
-for group in groups:
-
-    log.info(f"Handling group '{group}'")
-
-    DEPS_FOLDER = Path("infra/python-layers") / group
-    OUT_FILE = f"{group}_lambda_layer"  # no .zip here because of how shutil works
-
-    log.info("Exporting requirements")
-
-    # add folder and .gitignore if running for first time
-    if not DEPS_FOLDER.exists():
-        DEPS_FOLDER.mkdir(exist_ok=True, parents=True)
-        with open(DEPS_FOLDER / ".gitignore", "w") as f:
-            f.write("*\n")
-
-    # update requirements
-    subprocess.run(
-        [
-            "poetry",
-            "export",
-            "--only",
-            group,
-            "--without-hashes",
-            "-o",
-            DEPS_FOLDER / "requirements.txt",
-        ]
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(
+        prog="py build_layers.py",
+        description="Build lambda layers",
     )
 
-    log.info("Cleanup installation folder")
+    parser.add_argument("groups", choices=GROUPS, nargs="+")
+    args = parser.parse_args()
+    groups = args.groups
 
-    # cleanup folder
-    if (DEPS_FOLDER / "python").exists():
-        shutil.rmtree(DEPS_FOLDER / "python")
+    OUT_FOLDER = Path("infra/managed-files")
 
-    log.info("Installing dependencies")
+    for group in groups:
+        log.info(f"Handling group '{group}'")
 
-    # install into folder
-    subprocess.run(
-        [
-            "pip",
-            "install",
-            "-r",
-            DEPS_FOLDER / "requirements.txt",
-            "-t",
-            DEPS_FOLDER / "python",
-            "--upgrade",
-            "--platform",
-            "manylinux2014_x86_64",
-            "--only-binary",
-            ":all:",
-        ]
-    )
+        DEPS_FOLDER = Path("infra/python-layers") / group
+        OUT_FILE = f"{group}_lambda_layer"  # no .zip here because of how shutil works
 
-    log.info("Creating zipfile")
+        log.info("Exporting requirements")
 
-    # create zip
-    file = shutil.make_archive(OUT_FOLDER / OUT_FILE, "zip", DEPS_FOLDER, "python")
+        # add folder and .gitignore if running for first time
+        if not DEPS_FOLDER.exists():
+            DEPS_FOLDER.mkdir(exist_ok=True, parents=True)
+            with open(DEPS_FOLDER / ".gitignore", "w") as f:
+                f.write("*\n")
 
-    log.info(f"Finished creating {file}")
+        # update requirements
+        subprocess.run(
+            [
+                "poetry",
+                "export",
+                "--only",
+                group,
+                "--without-hashes",
+                "-o",
+                DEPS_FOLDER / "requirements.txt",
+            ]
+        )
+
+        log.info("Cleanup installation folder")
+
+        # cleanup folder
+        if (DEPS_FOLDER / "python").exists():
+            shutil.rmtree(DEPS_FOLDER / "python")
+
+        log.info("Installing dependencies")
+
+        # install into folder
+        subprocess.run(
+            [
+                "pip",
+                "install",
+                "-r",
+                DEPS_FOLDER / "requirements.txt",
+                "-t",
+                DEPS_FOLDER / "python",
+                "--upgrade",
+                "--platform",
+                "manylinux2014_x86_64",
+                "--only-binary",
+                ":all:",
+            ]
+        )
+
+        log.info("Creating zipfile")
+
+        # create zip
+        file = shutil.make_archive(OUT_FOLDER / OUT_FILE, "zip", DEPS_FOLDER, "python")
+
+        log.info(f"Finished creating {file}")
