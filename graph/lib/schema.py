@@ -312,8 +312,8 @@ class Mutation:
         db_composer = crud.create_composer(composer_model)
 
         # add songs
-        songs_ = songs or []
-        crud.create_memberships(Kind.composer, db_composer.id, songs_)
+        if songs:
+            crud.create_memberships(Kind.composer, db_composer.id, songs)
 
         return Composer(**db_composer.model_dump())
 
@@ -345,8 +345,8 @@ class Mutation:
         db_collection = crud.create_collection(collection_model)
 
         # add songs
-        songs_ = songs or []
-        crud.create_memberships(Kind.collection, db_collection.id, songs_)
+        if songs:
+            crud.create_memberships(Kind.collection, db_collection.id, songs)
 
         return Collection(**db_collection.model_dump())
 
