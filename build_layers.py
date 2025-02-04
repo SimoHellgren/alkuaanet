@@ -29,14 +29,14 @@ for group in groups:
 
     log.info(f"Handling group '{group}'")
 
-    DEPS_FOLDER = Path(group) / "deps"
+    DEPS_FOLDER = Path("infra/python-layers") / group
     OUT_FILE = f"{group}_lambda_layer"  # no .zip here because of how shutil works
 
     log.info("Exporting requirements")
 
     # add folder and .gitignore if running for first time
     if not DEPS_FOLDER.exists():
-        DEPS_FOLDER.mkdir(exist_ok=True)
+        DEPS_FOLDER.mkdir(exist_ok=True, parents=True)
         with open(DEPS_FOLDER / ".gitignore", "w") as f:
             f.write("*\n")
 
