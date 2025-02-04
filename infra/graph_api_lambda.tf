@@ -85,7 +85,7 @@ resource "aws_iam_role_policy_attachment" "alkuaanet_lambda_policy_attachment" {
 data "archive_file" "graph_api_lambda_payload" {
   type        = "zip"
   source_dir  = "${path.module}/../graph/"
-  excludes    = ["__pycache__", "README.md"]
+  excludes    = ["__pycache__", "README.md", "lib/__pycache__"] # **/__pycache__ doesn't seem to work
   output_path = "${path.module}/managed-files/graph_lambda_payload.zip"
 }
 
