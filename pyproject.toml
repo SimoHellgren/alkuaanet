@@ -23,6 +23,7 @@ dev = [
 telegram = [
     "telepot<13.0,>=12.7",
     "requests<3,>=2",
+    "python-telegram-bot>=21.10",
 ]
 graph = [
     "mangum<1.0,>=0.19",
