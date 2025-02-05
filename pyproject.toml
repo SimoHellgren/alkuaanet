@@ -18,6 +18,7 @@ dev = [
     "uvicorn<1.0.0,>=0.23.2",
     "python-dotenv<2.0.0,>=1.0.0",
     "click<9.0.0,>=8.1.8",
+    "mypy>=1.15.0",
 ]
 telegram = [
     "telepot<13.0,>=12.7",
