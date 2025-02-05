@@ -100,7 +100,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
 
   layers = [aws_lambda_layer_version.graph_api_lambda_layer.arn]
 
-  runtime = "python3.11"
+  runtime = "python3.13"
 }
 
 resource "aws_lambda_function_url" "graph_api_lambda_url" {

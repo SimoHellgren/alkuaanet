@@ -21,7 +21,7 @@ resource "aws_lambda_function" "telegram_bot_lambda" {
     }
   }
 
-  runtime = "python3.11"
+  runtime = "python3.13"
 }
 
 resource "aws_lambda_function_url" "telegram_bot_lambda_url" {
