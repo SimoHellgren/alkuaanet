@@ -1,5 +1,11 @@
 from telegram import Update
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
+from telegram.ext import (
+    ApplicationBuilder,
+    CommandHandler,
+    ContextTypes,
+    MessageHandler,
+    filters,
+)
 from dotenv import load_dotenv
 import os
 import lib.service as api
@@ -29,7 +35,10 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 
 
 async def song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    q = context.args[0]
+    # allows using the same handler for both CommandHanlder and MessageHandler
+    # maybe there's a way to distinguish this from the context?
+    q = context.args[0] if context.args else update.message.text
+
     results = api.search("song", q)
 
     for song in results:
@@ -47,5 +56,6 @@ COMMANDS = [
 for command in COMMANDS:
     app.add_handler(CommandHandler(command.__name__, command))
 
+app.add_handler(MessageHandler(filters.TEXT, song))
 
 app.run_polling()
