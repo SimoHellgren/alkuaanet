@@ -1,36 +1,30 @@
-[tool.poetry]
+[project]
+authors = [
+    {name = "Simo Hellgrén", email = "hellgrensimo@gmail.com"},
+]
+license = {text = "MIT"}
+requires-python = "<4.0,>=3.11"
 name = "alkuaanet"
 version = "0.1.0"
 description = ""
-authors = ["Simo Hellgrén <hellgrensimo@gmail.com>"]
-license = "MIT"
 readme = "README.md"
 
-[tool.poetry.dependencies]
-python = "^3.11"
-numpy = "^1.25.2"
-
-
-[tool.poetry.group.dev.dependencies]
-pytest = "^7.4.0"
-black = "^23.7.0"
-flake8 = "^6.1.0"
-boto3 = "^1.28.66"
-uvicorn = "^0.23.2"
-python-dotenv = "^1.0.0"
-click = "^8.1.8"
-
-
-[tool.poetry.group.telegram.dependencies]
-telepot = "^12.7"
-requests = "^2"
-
-
-[tool.poetry.group.graph.dependencies]
-mangum = "^0.19"
-strawberry-graphql = {extras = ["asgi"], version = "^0"}
-pydantic = "^2.10.4"
-
-[build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+[dependency-groups]
+dev = [
+    "pytest<8.0.0,>=7.4.0",
+    "black<24.0.0,>=23.7.0",
+    "flake8<7.0.0,>=6.1.0",
+    "boto3<2.0.0,>=1.28.66",
+    "uvicorn<1.0.0,>=0.23.2",
+    "python-dotenv<2.0.0,>=1.0.0",
+    "click<9.0.0,>=8.1.8",
+]
+telegram = [
+    "telepot<13.0,>=12.7",
+    "requests<3,>=2",
+]
+graph = [
+    "mangum<1.0,>=0.19",
+    "pydantic<3.0.0,>=2.10.4",
+    "strawberry-graphql[asgi]>=0.258.0",
+]

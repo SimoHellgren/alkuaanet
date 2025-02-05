@@ -49,11 +49,11 @@ if __name__ == "__main__":
         # update requirements
         subprocess.run(
             [
-                "poetry",
+                "uv",
                 "export",
-                "--only",
+                "--only-group",
                 group,
-                "--without-hashes",
+                "--no-hashes",
                 "-o",
                 DEPS_FOLDER / "requirements.txt",
             ]
