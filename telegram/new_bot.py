@@ -1,5 +1,5 @@
 from functools import partial
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
+from telegram import Update, Message, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
     CallbackQueryHandler,
@@ -41,20 +41,28 @@ def make_keyboard(kind: str, records: list[dict]) -> InlineKeyboardMarkup:
     return InlineKeyboardMarkup(buttons)
 
 
-async def song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    # allows using the same handler for both CommandHanlder and MessageHandler
-    # maybe there's a way to distinguish this from the context?
-    query = context.args[0] if context.args else update.message.text
+async def search_song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    # allows usage from both CommandHandler and MessageHandler
+    query = " ".join(context.args or []) or update.message.text
 
     results = api.search("song", query)
 
     if not results:
-        await update.message.reply_markdown_v2(f"No results for *{query}*")
+        await update.message.reply_markdown_v2(f"No results for _{query}_")
 
     else:
         await update.message.reply_markdown_v2(
-            f"Results for *{query}*", reply_markup=make_keyboard("song", results)
+            f"Results for _{query}_", reply_markup=make_keyboard("song", results)
         )
+
+
+async def send_song(song: dict, message: Message) -> None:
+    await message.reply_text(f"{song["name"]}\n{song["tones"]}")
+    await message.reply_voice(song["opus"])
+
+
+async def random(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+    await send_song(api.get_random_song(), update.message)
 
 
 async def search_group(kind: str, update: Update, context: ContextTypes) -> None:
@@ -63,10 +71,10 @@ async def search_group(kind: str, update: Update, context: ContextTypes) -> None
     results = api.search(kind, query)
 
     if not results:
-        await update.message.reply_markdown_v2(f"No results for **{query}**")
+        await update.message.reply_markdown_v2(f"No results for _{query}_")
     else:
         await update.message.reply_markdown_v2(
-            f"Results for **{query}**", reply_markup=make_keyboard(kind, results)
+            f"Results for _{query}_", reply_markup=make_keyboard(kind, results)
         )
 
 
@@ -78,10 +86,7 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
     kind, id = query.data.split(":")
 
     if kind == "song":
-        song = api.get_song(id)
-
-        await query.message.reply_text(f"{song["name"]}\n{song["tones"]}")
-        await query.message.reply_voice(song["opus"])
+        await send_song(api.get_song(id), query.message)
 
     if kind in ("composer", "collection"):
         songs = api.get_songlist(query.data)
@@ -98,10 +103,11 @@ app = ApplicationBuilder().token(TOKEN).build()
 
 
 app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("song", song))
+app.add_handler(CommandHandler("song", search_song))
+app.add_handler(CommandHandler("random", random))
 app.add_handler(CommandHandler("composers", partial(search_group, "composer")))
 app.add_handler(CommandHandler("collections", partial(search_group, "collection")))
-app.add_handler(MessageHandler(filters.TEXT, song))
+app.add_handler(MessageHandler(filters.TEXT, search_song))
 app.add_handler(CallbackQueryHandler(handle_callback))
 
 app.run_polling()
