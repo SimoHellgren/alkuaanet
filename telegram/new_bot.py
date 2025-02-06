@@ -99,8 +99,8 @@ app = ApplicationBuilder().token(TOKEN).build()
 
 app.add_handler(CommandHandler("start", start))
 app.add_handler(CommandHandler("song", song))
-app.add_handler(CommandHandler("composer", partial(search_group, "composer")))
-app.add_handler(CommandHandler("collection", partial(search_group, "collection")))
+app.add_handler(CommandHandler("composers", partial(search_group, "composer")))
+app.add_handler(CommandHandler("collections", partial(search_group, "collection")))
 app.add_handler(MessageHandler(filters.TEXT, song))
 app.add_handler(CallbackQueryHandler(fetch_song))
 
