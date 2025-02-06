@@ -36,24 +36,28 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     await update.message.reply_text(msg)
 
 
+def make_keyboard(kind: str, records: list[dict]) -> InlineKeyboardMarkup:
+    buttons = [
+        [InlineKeyboardButton(x["name"], callback_data=f"{kind}:{x["id"]}")]
+        for x in records
+    ]
+
+    return InlineKeyboardMarkup(buttons)
+
+
 async def song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     # allows using the same handler for both CommandHanlder and MessageHandler
     # maybe there's a way to distinguish this from the context?
-    q = context.args[0] if context.args else update.message.text
+    query = context.args[0] if context.args else update.message.text
 
-    results = api.search("song", q)
+    results = api.search("song", query)
 
     if not results:
-        await update.message.reply_markdown_v2(f"No results for *{q}*")
+        await update.message.reply_markdown_v2(f"No results for *{query}*")
 
     else:
-        keys = [
-            [InlineKeyboardButton(song["name"], callback_data=f"song:{song["id"]}")]
-            for song in results
-        ]
-
         await update.message.reply_markdown_v2(
-            f"Results for *{q}*", reply_markup=InlineKeyboardMarkup(keys)
+            f"Results for *{query}*", reply_markup=make_keyboard("song", results)
         )
 
 
@@ -65,15 +69,8 @@ async def search_group(kind: str, update: Update, context: ContextTypes) -> None
     if not results:
         await update.message.reply_markdown_v2(f"No results for **{query}**")
     else:
-        buttons = [
-            [InlineKeyboardButton(x["name"], callback_data=f"{kind}:{x["id"]}")]
-            for x in results
-        ]
-
-        keyboard = InlineKeyboardMarkup(buttons)
-
         await update.message.reply_markdown_v2(
-            f"Results for **{query}**", reply_markup=keyboard
+            f"Results for **{query}**", reply_markup=make_keyboard(kind, results)
         )
 
 
@@ -89,6 +86,16 @@ async def fetch_song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
         await query.message.reply_text(f"{song["name"]}\n{song["tones"]}")
         await query.message.reply_voice(song["opus"])
+
+    if kind in ("composer", "collection"):
+        songs = api.get_songlist(query.data)
+
+        if not songs:
+            await query.message.reply_markdown_v2(f"No songs")
+        else:
+            await query.message.reply_markdown_v2(
+                "Songs:", reply_markup=make_keyboard("song", songs)
+            )
 
 
 app = ApplicationBuilder().token(TOKEN).build()
