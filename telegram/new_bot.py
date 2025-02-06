@@ -70,7 +70,7 @@ async def search_group(kind: str, update: Update, context: ContextTypes) -> None
         )
 
 
-async def fetch_song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
+async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
 
     await query.answer()
@@ -102,6 +102,6 @@ app.add_handler(CommandHandler("song", song))
 app.add_handler(CommandHandler("composers", partial(search_group, "composer")))
 app.add_handler(CommandHandler("collections", partial(search_group, "collection")))
 app.add_handler(MessageHandler(filters.TEXT, song))
-app.add_handler(CallbackQueryHandler(fetch_song))
+app.add_handler(CallbackQueryHandler(handle_callback))
 
 app.run_polling()
