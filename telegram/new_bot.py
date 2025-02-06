@@ -17,10 +17,6 @@ load_dotenv()
 TOKEN = os.environ["DEV_BOT_TOKEN"]
 
 
-async def hello(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
-    await update.message.reply_text(f"Hello {update.effective_user.name}")
-
-
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     msg = (
         "Tervetuloa alkuäänibottiin!\n\n"
@@ -101,7 +97,6 @@ async def fetch_song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 app = ApplicationBuilder().token(TOKEN).build()
 
 COMMANDS = [
-    hello,
     start,
     song,
 ]
