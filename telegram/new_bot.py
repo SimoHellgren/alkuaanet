@@ -71,10 +71,10 @@ async def search_group(kind: str, update: Update, context: ContextTypes) -> None
     results = api.search(kind, query)
 
     if not results:
-        await update.message.reply_markdown_v2(f"No results for _{query}_")
+        await update.message.reply_markdown_v2(f"No results for _{kind} {query}_")
     else:
         await update.message.reply_markdown_v2(
-            f"Results for _{query}_", reply_markup=make_keyboard(kind, results)
+            f"Results for _{kind} {query}_", reply_markup=make_keyboard(kind, results)
         )
 
 
