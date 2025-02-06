@@ -1,3 +1,4 @@
+from functools import partial
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -56,6 +57,26 @@ async def song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
         )
 
 
+async def search_group(kind: str, update: Update, context: ContextTypes) -> None:
+    query = " ".join(context.args)
+
+    results = api.search(kind, query)
+
+    if not results:
+        await update.message.reply_markdown_v2(f"No results for **{query}**")
+    else:
+        buttons = [
+            [InlineKeyboardButton(x["name"], callback_data=f"{kind}:{x["id"]}")]
+            for x in results
+        ]
+
+        keyboard = InlineKeyboardMarkup(buttons)
+
+        await update.message.reply_markdown_v2(
+            f"Results for **{query}**", reply_markup=keyboard
+        )
+
+
 async def fetch_song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
     query = update.callback_query
 
@@ -81,6 +102,9 @@ COMMANDS = [
 for command in COMMANDS:
     app.add_handler(CommandHandler(command.__name__, command))
 
+
+app.add_handler(CommandHandler("composer", partial(search_group, "composer")))
+app.add_handler(CommandHandler("collection", partial(search_group, "collection")))
 app.add_handler(MessageHandler(filters.TEXT, song))
 app.add_handler(CallbackQueryHandler(fetch_song))
 
