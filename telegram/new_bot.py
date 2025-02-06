@@ -35,7 +35,7 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
 def make_keyboard(kind: str, records: list[dict]) -> InlineKeyboardMarkup:
     buttons = [
         [InlineKeyboardButton(x["name"], callback_data=f"{kind}:{x["id"]}")]
-        for x in records
+        for x in sorted(records, key=lambda x: x["name"])
     ]
 
     return InlineKeyboardMarkup(buttons)
