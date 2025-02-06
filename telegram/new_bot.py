@@ -96,15 +96,9 @@ async def fetch_song(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None
 
 app = ApplicationBuilder().token(TOKEN).build()
 
-COMMANDS = [
-    start,
-    song,
-]
 
-for command in COMMANDS:
-    app.add_handler(CommandHandler(command.__name__, command))
-
-
+app.add_handler(CommandHandler("start", start))
+app.add_handler(CommandHandler("song", song))
 app.add_handler(CommandHandler("composer", partial(search_group, "composer")))
 app.add_handler(CommandHandler("collection", partial(search_group, "collection")))
 app.add_handler(MessageHandler(filters.TEXT, song))
