@@ -17,10 +17,12 @@ TOKEN = token_param["Parameter"]["Value"]
 app = get_app(TOKEN)
 
 
-async def process_event(event: dict):
+async def process_event(update_dict: dict):
+    update = Update.de_json(update_dict, app.bot)  # no idea why, but yes.
+
     await app.initialize()
 
-    await app.process_update(Update(**event))
+    await app.process_update(update)
 
 
 def handler(event, context):
@@ -28,4 +30,6 @@ def handler(event, context):
 
     data = json.loads(event["body"])
 
-    asyncio.run(process_event(data))
+    loop = asyncio.get_event_loop()
+
+    loop.run_until_complete(process_event(data))
