@@ -1,7 +1,7 @@
 from functools import partial
-import boto3
 from telegram import Update, Message, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
+    Application,
     ApplicationBuilder,
     CallbackQueryHandler,
     CommandHandler,
@@ -13,11 +13,11 @@ from telegram.ext import (
 from . import service as api
 
 
-ssm = boto3.client("ssm")
-token_param = ssm.get_parameter(
-    Name="alkuaanet-telegram-bot-token", WithDecryption=True
-)
-TOKEN = token_param["Parameter"]["Value"]
+# ssm = boto3.client("ssm")
+# token_param = ssm.get_parameter(
+#     Name="alkuaanet-telegram-bot-token", WithDecryption=True
+# )
+# TOKEN = token_param["Parameter"]["Value"]
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -102,13 +102,15 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
             )
 
 
-app = ApplicationBuilder().token(TOKEN).build()
+def get_app(token) -> Application:
+    app = ApplicationBuilder().token(token).build()
 
+    app.add_handler(CommandHandler("start", start))
+    app.add_handler(CommandHandler("song", search_song))
+    app.add_handler(CommandHandler("random", random))
+    app.add_handler(CommandHandler("composers", partial(search_group, "composer")))
+    app.add_handler(CommandHandler("collections", partial(search_group, "collection")))
+    app.add_handler(MessageHandler(filters.TEXT, search_song))
+    app.add_handler(CallbackQueryHandler(handle_callback))
 
-app.add_handler(CommandHandler("start", start))
-app.add_handler(CommandHandler("song", search_song))
-app.add_handler(CommandHandler("random", random))
-app.add_handler(CommandHandler("composers", partial(search_group, "composer")))
-app.add_handler(CommandHandler("collections", partial(search_group, "collection")))
-app.add_handler(MessageHandler(filters.TEXT, search_song))
-app.add_handler(CallbackQueryHandler(handle_callback))
+    return app
