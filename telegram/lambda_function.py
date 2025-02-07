@@ -1,26 +1,31 @@
-from lib.main import bot
+import asyncio
 import json
 import logging
+import boto3
+from telegram import Update
+from lib.bot import get_app
 
 log = logging.getLogger()
 
 
+ssm = boto3.client("ssm")
+token_param = ssm.get_parameter(
+    Name="alkuaanet-telegram-bot-token", WithDecryption=True
+)
+TOKEN = token_param["Parameter"]["Value"]
+
+app = get_app(TOKEN)
+
+
+async def process_event(event: dict):
+    await app.initialize()
+
+    await app.process_update(Update(**event))
+
+
 def handler(event, context):
+    log.info(event["body"])
+
     data = json.loads(event["body"])
 
-    if "message" in data:
-        kind = "message"
-        log_type = "telegram.message"
-
-    elif "callback_query" in data:
-        kind = "callback_query"
-        log_type = "telegram.callback"
-
-    else:
-        kind = None
-        log_type = "telegram.unhandled"
-
-    log.info(event["body"], extra={"type": log_type})
-
-    if kind:
-        bot.handle(data[kind])
+    asyncio.run(process_event(data))

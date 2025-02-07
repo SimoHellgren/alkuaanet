@@ -9,15 +9,7 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-
 from . import service as api
-
-
-# ssm = boto3.client("ssm")
-# token_param = ssm.get_parameter(
-#     Name="alkuaanet-telegram-bot-token", WithDecryption=True
-# )
-# TOKEN = token_param["Parameter"]["Value"]
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
