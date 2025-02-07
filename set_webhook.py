@@ -1,13 +1,13 @@
 """TODO: see if this can be automated"""
 
+import os
 import dotenv
+import requests
 
 dotenv.load_dotenv()
 
-from telegram.lib.main import bot
-import os
+LAMBDA_URL = os.environ.get("LAMBDA_URL")
+TOKEN = os.environ.get("BOT_TOKEN")
 
-
-API_URL = os.environ.get("API_URL")
-bot.deleteWebhook()
-bot.setWebhook(API_URL)
+requests.post(f"https://api.telegram.org/bot{TOKEN}/deleteWebhook")
+requests.post(f"https://api.telegram.org/bot{TOKEN}/setWebhook?url={LAMBDA_URL}")
