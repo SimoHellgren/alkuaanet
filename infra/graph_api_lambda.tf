@@ -85,7 +85,7 @@ resource "aws_iam_role_policy_attachment" "alkuaanet_lambda_policy_attachment" {
 data "archive_file" "graph_api_lambda_payload" {
   type        = "zip"
   source_dir  = "${path.module}/../graph/"
-  excludes    = ["__pycache__", "README.md", "lib/__pycache__"] # **/__pycache__ doesn't seem to work
+  excludes    = ["**/__pycache__", "README.md"]
   output_path = "${path.module}/managed-files/graph_lambda_payload.zip"
 }
 
@@ -95,6 +95,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "lib.schema.handler"
   timeout       = 5
+  memory_size   = 256
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
