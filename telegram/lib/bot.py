@@ -95,6 +95,9 @@ async def handle_callback(update: Update, context: ContextTypes.DEFAULT_TYPE) ->
 
 
 def get_app(token) -> Application:
+    """App creation wrapped like this to enable injecting token later.
+    Useful for running e.g. on a dev bot token.
+    """
     app = ApplicationBuilder().token(token).build()
 
     app.add_handler(CommandHandler("start", start))
