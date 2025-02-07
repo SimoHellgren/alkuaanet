@@ -1,4 +1,5 @@
 from functools import partial
+import boto3
 from telegram import Update, Message, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import (
     ApplicationBuilder,
@@ -8,13 +9,15 @@ from telegram.ext import (
     MessageHandler,
     filters,
 )
-from dotenv import load_dotenv
-import os
-import lib.service as api
+
+from . import service as api
 
 
-load_dotenv()
-TOKEN = os.environ["DEV_BOT_TOKEN"]
+ssm = boto3.client("ssm")
+token_param = ssm.get_parameter(
+    Name="alkuaanet-telegram-bot-token", WithDecryption=True
+)
+TOKEN = token_param["Parameter"]["Value"]
 
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE) -> None:
@@ -109,5 +112,3 @@ app.add_handler(CommandHandler("composers", partial(search_group, "composer")))
 app.add_handler(CommandHandler("collections", partial(search_group, "collection")))
 app.add_handler(MessageHandler(filters.TEXT, search_song))
 app.add_handler(CallbackQueryHandler(handle_callback))
-
-app.run_polling()
