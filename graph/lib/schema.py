@@ -9,6 +9,21 @@ from lib import opus
 from lib.hankkari import is_hankkari
 from enum import StrEnum, auto
 
+from strawberry.permission import BasePermission
+
+
+class IsSuperUser(BasePermission):
+    message = "You're not me!"
+
+    def has_permission(self, source, info, **kwargs) -> bool:
+        request = info.context["request"]
+
+        if "Authorization" in request.headers:
+            # Authorization header must be present, but an empty string.
+            return not request.headers["Authorization"]
+
+        return False
+
 
 @strawberry.enum
 class Kind(StrEnum):
@@ -244,7 +259,7 @@ class CollectionInput:
 @strawberry.type
 class Mutation:
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def create_song(
         self,
         song: SongInput,
@@ -280,7 +295,7 @@ class Mutation:
 
         return Song(**db_song.model_dump())
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def update_song(self, id: int, name: str, tones: str) -> Song:
         song_model = models.SongUpdate(
             name=name,
@@ -303,14 +318,14 @@ class Mutation:
 
         return Song(**db_song.model_dump())
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def delete_song(self, id: int) -> int:
         """Deletes song and all it's memberships"""
         result = crud.delete_song_cascade(id)
 
         return result
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def create_composer(
         self, composer: ComposerInput, songs: list[int] | None = None
     ) -> Composer:
@@ -325,7 +340,7 @@ class Mutation:
 
         return Composer(**db_composer.model_dump())
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def update_composer(
         self, id: int, first_name: str | None, last_name: str
     ) -> Composer:
@@ -337,13 +352,13 @@ class Mutation:
 
         return Composer(**db_composer.model_dump())
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def delete_composer(self, id: int) -> int:
         crud.delete_composer_cascade(id)
 
         return id
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def create_collection(
         self, collection: CollectionInput, songs: list[int] | None = None
     ) -> Collection:
@@ -358,7 +373,7 @@ class Mutation:
 
         return Collection(**db_collection.model_dump())
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def update_collection(self, id: int, name: str) -> Collection:
         collection_model = models.CollectionUpdate(name=name)
 
@@ -366,12 +381,12 @@ class Mutation:
 
         return Collection(**db_collection.model_dump())
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def delete_collection(self, id: int) -> int:
         crud.delete_collection_cascade(id)
         return id
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def add_membership(
         self, kind: Kind, group_id: int, song_ids: list[int]
     ) -> list[int]:
@@ -379,7 +394,7 @@ class Mutation:
 
         return [record.song_id for record in records]
 
-    @strawberry.mutation
+    @strawberry.mutation(permission_classes=[IsSuperUser])
     def remove_membership(
         self, kind: Kind, group_id: int, song_ids: list[int]
     ) -> list[int]:
