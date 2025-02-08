@@ -52,7 +52,8 @@ data "aws_iam_policy_document" "alkuaanet_accesses" {
       "ssm:GetParameters"
     ]
     resources = [
-      aws_ssm_parameter.telegram_bot_token.arn
+      aws_ssm_parameter.telegram_bot_token.arn,
+      aws_ssm_parameter.fernet-key.arn
     ]
   }
 
@@ -114,5 +115,16 @@ resource "aws_cloudwatch_log_group" "graph_api_log_group" {
   retention_in_days = 7
   lifecycle {
     prevent_destroy = false
+  }
+}
+
+
+resource "aws_ssm_parameter" "fernet-key" {
+  name  = "alkuaanet-fernet-key"
+  type  = "SecureString"
+  value = " "
+
+  lifecycle {
+    ignore_changes = [value]
   }
 }

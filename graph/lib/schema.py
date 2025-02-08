@@ -6,6 +6,7 @@ from mangum import Mangum
 from lib import crud
 from lib import models
 from lib import opus
+from lib import auth
 from lib.hankkari import is_hankkari
 from enum import StrEnum, auto
 
@@ -19,8 +20,8 @@ class IsSuperUser(BasePermission):
         request = info.context["request"]
 
         if "Authorization" in request.headers:
-            # Authorization header must be present, but an empty string.
-            return not request.headers["Authorization"]
+            kind, _, token = request.headers["Authorization"].partition(" ")
+            return auth.check_superuser_token(token)
 
         return False
 
