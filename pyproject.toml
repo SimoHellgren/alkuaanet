@@ -3,7 +3,7 @@ authors = [
     {name = "Simo Hellgrén", email = "hellgrensimo@gmail.com"},
 ]
 license = {text = "MIT"}
-requires-python = "<4.0,>=3.11"
+requires-python = "<4.0,>=3.13"
 name = "alkuaanet"
 version = "0.1.0"
 description = ""
