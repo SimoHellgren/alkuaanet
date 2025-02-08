@@ -6,7 +6,10 @@ How to get things up and running:
 1. Build lambda layers for Telegram bot and API
    - run `py build_layers.py` (see [below](#building-lambda-layers) for a more detailed description)
 2. `cd infra && terraform apply` 
-3. Acquire bot token and store it in SSM (created by Terraform)
+3. Set SSM parameters
+   - acquire [Telegram bot token](https://core.telegram.org/bots/tutorial#obtain-your-bot-token)
+   - generate a secret to use as a key for Fernet (see e.g. [here](https://cryptography.io/en/latest/fernet/#cryptography.fernet.Fernet))
+   - set the above mentioned to env vars `BOT_TOKEN` and `FERNET_KEY` and run `py set_ssm_parameters.py`
 4. Set up a [webhook](https://core.telegram.org/bots/api#setwebhook) to the bot's function url
    - check the API's URL and set it as an environment variable `API_URL` and run `py set_webhook.py`
      - you can do `terraform show aws_lambda_function_url.graph_api_lambda_url` to get the value

@@ -22,6 +22,7 @@ There different _kinds_ of records in the DB:
 - opus
 - sequence
 - metadata
+- token
 
 For every record _except for the membership records_ you can discern the kind of record from the partition key. E.g. for _songs_ the partition key is `song` 
 
@@ -48,6 +49,9 @@ Fields:
 - sk - the sk of the song, e.g. `song:1`
 - name - the name of the song
 - tones - the tones of the song
+
+### Token records
+Token records are meant for user authentication. Currently only for superuser access.
 
 ### Opus records
 Opus records contain the sound files or the starting tones. Each unique* set of tones results in exactly one record, which is used for any song starting with the particular tones.
