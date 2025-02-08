@@ -10,7 +10,10 @@ How to get things up and running:
    - acquire [Telegram bot token](https://core.telegram.org/bots/tutorial#obtain-your-bot-token)
    - generate a secret to use as a key for Fernet (see e.g. [here](https://cryptography.io/en/latest/fernet/#cryptography.fernet.Fernet))
    - set the above mentioned to env vars `BOT_TOKEN` and `FERNET_KEY` and run `py set_ssm_parameters.py`
-4. Set up a [webhook](https://core.telegram.org/bots/api#setwebhook) to the bot's function url
+4. Generate a superuser token and add it to the DynamoDB table
+   - you can use `generate_superuser_token.py` to create the token. Create record in DynamoDB with `pk=token, sk=superuser, value=<key>`
+   - the type of `value` in DDB is binary, which only accepts base64 - the above mentioned script takes care of this  
+5. Set up a [webhook](https://core.telegram.org/bots/api#setwebhook) to the bot's function url
    - check the API's URL and set it as an environment variable `API_URL` and run `py set_webhook.py`
      - you can do `terraform show aws_lambda_function_url.graph_api_lambda_url` to get the value
      - you could probably automate this with lambda somehow, too. 
