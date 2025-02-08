@@ -1,3 +1,6 @@
+# API authentication
+GraphQL queries need no authentication. Mutations, on the other hand, require that a hashed superuser token is stored in the DB, and that the token is provided in the request headers with `Authorization: Bearer <token>`.
+
 # DynamoDB design documentation
 
 ## Background
