@@ -406,4 +406,4 @@ class Mutation:
 
 schema = strawberry.Schema(query=Query, mutation=Mutation)
 app = GraphQL(schema)
-handler = Mangum(app)
+handler = Mangum(app, lifespan="off")
