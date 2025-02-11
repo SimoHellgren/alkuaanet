@@ -25,8 +25,7 @@ graph = [
     { name = "strawberry-graphql", extra = ["asgi"] },
 ]
 telegram = [
-    { name = "python-telegram-bot" },
-    { name = "requests" },
+    { name = "httpx" },
 ]
 
 [package.metadata]
@@ -49,10 +48,7 @@ graph = [
     { name = "pydantic", specifier = ">=2.10.4,<3.0.0" },
     { name = "strawberry-graphql", extras = ["asgi"], specifier = ">=0.258.0" },
 ]
-telegram = [
-    { name = "python-telegram-bot", specifier = ">=21.10" },
-    { name = "requests", specifier = ">=2,<3" },
-]
+telegram = [{ name = "httpx", specifier = ">=0.28.1" }]
 
 [[package]]
 name = "annotated-types"
@@ -506,18 +502,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/f3/87/f44d7c9f274c7ee665a29b885ec97089ec5dc034c7f3fafa03da9e39a09e/python_multipart-0.0.20.tar.gz", hash = "sha256:8dd0cab45b8e23064ae09147625994d090fa46f5b0d1e13af944c331a7fa9d13", size = 37158 }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/45/58/38b5afbc1a800eeea951b9285d3912613f2603bdf897a4ab0f4bd7f405fc/python_multipart-0.0.20-py3-none-any.whl", hash = "sha256:8a62d3a8335e06589fe01f2a3e178cdcc632f3fbe0d492ad9ee0ec35aab1f104", size = 24546 },
-]
-
-[[package]]
-name = "python-telegram-bot"
-version = "21.10"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "httpx" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/4b/bc/3a00800cc495e3b4c031c5402faa2fc36b6411438d0fd91175f0c8f59471/python_telegram_bot-21.10.tar.gz", hash = "sha256:40481a8c4814ce2e530a21ce45d389695b0b210c5fb9dc75b8529aba8c9e76f8", size = 438289 }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f3/2f/b0823ff9ff7bca716ff05b8bfb3e1f058e0dd1f89fc8ec838e5467c1ffdd/python_telegram_bot-21.10-py3-none-any.whl", hash = "sha256:c874d2461d6bfa4b05c314cf6116cf1dafe537689aa8249924dd988603b6ba21", size = 669463 },
 ]
 
 [[package]]
