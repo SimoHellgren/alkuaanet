@@ -44,7 +44,7 @@ def flavor(update: dict) -> Flavor:
     return Flavor.unknown
 
 
-def start(update: dict, args=None) -> None:
+def start(update: dict, args: list[str]) -> None:
     chat_id = extract_chat_id(update)
     msg = (
         "Tervetuloa alkuäänibottiin!\n\n"
@@ -61,39 +61,99 @@ def start(update: dict, args=None) -> None:
     return bot.send_message(chat_id, msg, parse_mode=None)
 
 
+def send_song(chat_id: int, song: dict) -> None:
+    bot.send_voice(chat_id, song["opus"], f"{song["name"]}: {song["tones"]}")
+
+
+def handle_random(update: dict) -> None:
+    chat_id = extract_chat_id(update)
+    song = api.get_random_song()
+    send_song(chat_id, song)
+
+
 def handle_callback(update: dict) -> None:
     chat_id = extract_chat_id(update)
-    kind, id = update["callback_query"]["data"].split(":")
+    query_id = update["callback_query"]["id"]
+    callback_data = update["callback_query"]["data"]
+    kind, id = callback_data.split(":")
 
     match kind:
         case "song":
             song = api.get_song(int(id))
-            bot.send_voice(chat_id, song["opus"], f"{song["name"]}: {song["tones"]}")
+            send_song(chat_id, song)
+            bot.answer_callback_query(chat_id, query_id)
+
+        case "collection" | "composer":
+            songs = api.get_songlist(callback_data)
+            keyboard = make_keyboard("song", songs)
+            bot.send_message(chat_id, "Songs:", reply_markup=keyboard)
+            bot.answer_callback_query(chat_id, query_id)
 
 
-def handle_message(update: dict) -> None:
+def make_keyboard(kind: str, data: list[dict]) -> dict:
+    keys = [
+        [{"text": datum["name"], "callback_data": f"{kind}:{datum["id"]}"}]
+        for datum in data
+    ]
+    return {"inline_keyboard": keys}
+
+
+def handle_search(update: dict, kind: str, query: str) -> None:
+    results = api.search(kind, query)
+    keyboard = make_keyboard(kind, results)
+
+    if results:
+        reply = f"Results for _{kind} {query}_:"
+    else:
+        reply = f"No results for _{kind} {query}_"
+
     chat_id = extract_chat_id(update)
-
-    songs = api.search("song", update["message"]["text"])
-    for song in songs:
-        bot.send_message(chat_id, song["name"])
+    bot.send_message(chat_id, reply, reply_markup=keyboard)
 
 
 def handle_command(update: dict) -> None:
     command, args = parse_command(update["message"]["text"])
 
-    COMMANDS = {"/start": start}
+    match command:
+        case "/start":
+            start()
 
-    return COMMANDS[command](update, args)
+        case "/random":
+            handle_random(update)
+
+        case "/composers":
+            handle_search(update, "composer", " ".join(args))
+
+        case "/collections":
+            handle_search(update, "collection", " ".join(args))
 
 
 def process_update(update: dict) -> None:
     match flavor(update):
         case Flavor.command:
             handle_command(update)
-
         case Flavor.message:
-            handle_message(update)
+            handle_search(update, "song", update["message"]["text"])
 
         case Flavor.callback:
             handle_callback(update)
+
+
+if __name__ == "__main__":
+    from time import sleep
+
+    max_update = -1
+    print("Running...")
+    while True:
+        updates = (
+            bot.get_updates(params={"offset": max_update + 1}).json().get("result", [])
+        )
+
+        for update in updates:
+            print("processing", update)
+            process_update(update)
+
+        if updates:
+            max_update = max(u["update_id"] for u in updates)
+
+        sleep(2)
