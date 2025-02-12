@@ -42,7 +42,7 @@ class Bot:
             },
         )
 
-    def send_voice(self, chat_id: str, voice: BinaryIO, caption: str = ""):
+    def send_voice(self, chat_id: int, voice: BinaryIO, caption: str = ""):
         return self.post(
             "sendVoice",
             params={

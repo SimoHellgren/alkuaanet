@@ -3,7 +3,7 @@ from lib import service as api
 from lib.tg import Bot, Update, Message, CallbackQuery, Command, make_keyboard
 
 
-type Handler = Callable[[Bot, Update], None]
+type Handler[Kind] = Callable[[Bot, Kind], None]
 
 
 def handle_message(bot: Bot, message: Message) -> None:
@@ -53,21 +53,6 @@ def handle_search(bot: Bot, command: Command) -> None:
     bot.send_message(command.chat.id, reply, reply_markup=keyboard)
 
 
-def handle_command(bot, command: Command) -> None:
-    match command.name:
-        case "/start":
-            start(bot, command)
-
-        case "/random":
-            handle_random(bot, command)
-
-        case "/composers":
-            handle_search(bot, command)
-
-        case "/collections":
-            handle_search(bot, command)
-
-
 def handle_callback(bot: Bot, callback_query: CallbackQuery) -> None:
     kind, id = callback_query.data.split(":")
 
@@ -86,17 +71,31 @@ def handle_callback(bot: Bot, callback_query: CallbackQuery) -> None:
             bot.answer_callback_query(chat_id, callback_query.id)
 
 
-def process_update(bot: Bot, update: dict):
-    u = Update(**update)
+class App:
+    def __init__(
+        self,
+        bot,
+        message_handler: Handler[Message],
+        command_handlers: dict[str, Handler[Command]],
+        callback_handler: Handler[CallbackQuery],
+    ):
+        self.bot = bot
+        self.message_handler = message_handler
+        self.command_handlers = command_handlers
+        self.callback_handler = callback_handler
 
-    if u.message:
-        if u.message.is_command:
-            handle_command(bot, u.message.command)
-        else:
-            handle_message(bot, u.message)
+    def process_update(self, update: dict):
+        u = Update(**update)
 
-    elif u.callback_query:
-        handle_callback(bot, u.callback_query)
+        if u.message:
+            if u.message.is_command:
+                command = self.command_handlers[u.message.command.name]
+                command(self.bot, u.message.command)
+            else:
+                self.message_handler(self.bot, u.message)
+
+        elif u.callback_query:
+            self.callback_handler(self.bot, u.callback_query)
 
 
 if __name__ == "__main__":
@@ -109,17 +108,30 @@ if __name__ == "__main__":
     TOKEN = os.environ.get("DEV_BOT_TOKEN")
 
     bot = Bot(TOKEN)
+    app = App(
+        bot,
+        handle_message,
+        {
+            "/start": start,
+            "/random": handle_random,
+            "/collections": handle_search,
+            "/composers": handle_search,
+        },
+        handle_callback,
+    )
 
     max_update = -1
     print("Running...")
     while True:
         updates = (
-            bot.get_updates(params={"offset": max_update + 1}).json().get("result", [])
+            app.bot.get_updates(params={"offset": max_update + 1})
+            .json()
+            .get("result", [])
         )
 
         for update in updates:
             print("processing", update)
-            process_update(bot, update)
+            app.process_update(update)
 
         if updates:
             max_update = max(u["update_id"] for u in updates)
