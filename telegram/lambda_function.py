@@ -9,7 +9,7 @@ from lib.tg import Bot
 # suppress httpx logs to avoid logging apikey
 logging.getLogger("httpx").setLevel(logging.WARNING)
 
-log = logging.getLogger()
+log = logging.getLogger(__name__)
 
 
 ssm = boto3.client("ssm")
@@ -151,7 +151,7 @@ def process_update(update: dict) -> None:
 
 
 def handler(event, context):
-    log.info(event["body"])
+    log.info(event["body"], extra={"type": "telegram.update"})
     data = json.loads(event["body"])
 
     process_update(data)
