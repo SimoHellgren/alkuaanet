@@ -1,9 +1,5 @@
-from typing import Callable
 from lib import service as api
-from lib.tg import Bot, Update, Message, CallbackQuery, Command, make_keyboard
-
-
-type Handler[Kind] = Callable[[Bot, Kind], None]
+from lib.tg import App, Bot, Message, CallbackQuery, Command, make_keyboard
 
 
 def handle_message(bot: Bot, message: Message) -> None:
@@ -69,33 +65,6 @@ def handle_callback(bot: Bot, callback_query: CallbackQuery) -> None:
             keyboard = make_keyboard("song", songs)
             bot.send_message(chat_id, "Songs:", reply_markup=keyboard)
             bot.answer_callback_query(chat_id, callback_query.id)
-
-
-class App:
-    def __init__(
-        self,
-        bot,
-        message_handler: Handler[Message],
-        command_handlers: dict[str, Handler[Command]],
-        callback_handler: Handler[CallbackQuery],
-    ):
-        self.bot = bot
-        self.message_handler = message_handler
-        self.command_handlers = command_handlers
-        self.callback_handler = callback_handler
-
-    def process_update(self, update: dict):
-        u = Update(**update)
-
-        if u.message:
-            if u.message.is_command:
-                command = self.command_handlers[u.message.command.name]
-                command(self.bot, u.message.command)
-            else:
-                self.message_handler(self.bot, u.message)
-
-        elif u.callback_query:
-            self.callback_handler(self.bot, u.callback_query)
 
 
 if __name__ == "__main__":

@@ -1,9 +1,12 @@
 from enum import StrEnum, auto
 from functools import partialmethod
+from typing import Callable
 import json
 from typing import BinaryIO
 import httpx
 from pydantic import BaseModel
+
+type Handler[Kind] = Callable[[Bot, Kind], None]
 
 
 class ParseMode(StrEnum):
@@ -122,3 +125,32 @@ class Update(BaseModel):
     update_id: int
     message: Message | None = None
     callback_query: CallbackQuery | None = None
+
+
+class App:
+    """Binds a bot and handlers in a nice bundle :3"""
+
+    def __init__(
+        self,
+        bot,
+        message_handler: Handler[Message],
+        command_handlers: dict[str, Handler[Command]],
+        callback_handler: Handler[CallbackQuery],
+    ):
+        self.bot = bot
+        self.message_handler = message_handler
+        self.command_handlers = command_handlers
+        self.callback_handler = callback_handler
+
+    def process_update(self, update: dict):
+        u = Update(**update)
+
+        if u.message:
+            if u.message.is_command:
+                command = self.command_handlers[u.message.command.name]
+                command(self.bot, u.message.command)
+            else:
+                self.message_handler(self.bot, u.message)
+
+        elif u.callback_query:
+            self.callback_handler(self.bot, u.callback_query)
