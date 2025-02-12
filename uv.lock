@@ -6,6 +6,18 @@ name = "alkuaanet"
 version = "0.1.0"
 source = { virtual = "." }
 
+[package.optional-dependencies]
+graph = [
+    { name = "cryptography" },
+    { name = "mangum" },
+    { name = "pydantic" },
+    { name = "strawberry-graphql", extra = ["asgi"] },
+]
+telegram = [
+    { name = "httpx" },
+    { name = "pydantic" },
+]
+
 [package.dev-dependencies]
 dev = [
     { name = "black" },
@@ -18,17 +30,16 @@ dev = [
     { name = "requests" },
     { name = "uvicorn" },
 ]
-graph = [
-    { name = "cryptography" },
-    { name = "mangum" },
-    { name = "pydantic" },
-    { name = "strawberry-graphql", extra = ["asgi"] },
-]
-telegram = [
-    { name = "httpx" },
-]
 
 [package.metadata]
+requires-dist = [
+    { name = "cryptography", marker = "extra == 'graph'", specifier = ">=44.0.0" },
+    { name = "httpx", marker = "extra == 'telegram'", specifier = ">=0.28.1" },
+    { name = "mangum", marker = "extra == 'graph'", specifier = ">=0.19,<1.0" },
+    { name = "pydantic", marker = "extra == 'graph'", specifier = ">=2.10.4,<3.0.0" },
+    { name = "pydantic", marker = "extra == 'telegram'", specifier = ">=2.10.6" },
+    { name = "strawberry-graphql", extras = ["asgi"], marker = "extra == 'graph'", specifier = ">=0.258.0" },
+]
 
 [package.metadata.requires-dev]
 dev = [
@@ -42,13 +53,6 @@ dev = [
     { name = "requests", specifier = ">=2.32.3" },
     { name = "uvicorn", specifier = ">=0.23.2,<1.0.0" },
 ]
-graph = [
-    { name = "cryptography", specifier = ">=44.0.0" },
-    { name = "mangum", specifier = ">=0.19,<1.0" },
-    { name = "pydantic", specifier = ">=2.10.4,<3.0.0" },
-    { name = "strawberry-graphql", extras = ["asgi"], specifier = ">=0.258.0" },
-]
-telegram = [{ name = "httpx", specifier = ">=0.28.1" }]
 
 [[package]]
 name = "annotated-types"
