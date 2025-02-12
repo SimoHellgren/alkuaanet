@@ -3,6 +3,7 @@ from functools import partialmethod
 import json
 from typing import BinaryIO
 import httpx
+from pydantic import BaseModel
 
 
 class ParseMode(StrEnum):
@@ -37,7 +38,7 @@ class Bot:
                 "chat_id": chat_id,
                 "text": text,
                 "parse_mode": parse_mode,
-                "reply_markup": json.dumps(reply_markup),
+                "reply_markup": json.dumps(reply_markup) if reply_markup else None,
             },
         )
 
@@ -62,3 +63,62 @@ class Bot:
             "answerCallbackQuery",
             params={"chat_id": chat_id, "callback_query_id": callback_query_id},
         )
+
+
+def make_keyboard(kind: str, data: list[dict]) -> dict:
+    keys = [
+        [{"text": datum["name"], "callback_data": f"{kind}:{datum["id"]}"}]
+        for datum in data
+    ]
+    return {"inline_keyboard": keys}
+
+
+class Chat(BaseModel):
+    id: int
+
+
+class Entity(BaseModel):
+    type: str
+
+
+class Command(BaseModel):
+    name: str
+    args: list[str]
+    chat: Chat
+
+    @classmethod
+    def from_message(cls, message: "Message"):
+        command, _, args = message.text.partition(" ")
+        return cls(name=command, args=args.split(), chat=message.chat)
+
+
+class Message(BaseModel):
+    chat: Chat
+    text: str
+    entities: list[Entity] | None = None
+
+    @property
+    def is_command(self) -> bool:
+        if not self.entities:
+            return False
+
+        return any(e.type == "bot_command" for e in self.entities)
+
+    @property
+    def command(self) -> Command | None:
+        if self.is_command:
+            return Command.from_message(self)
+
+        return None
+
+
+class CallbackQuery(BaseModel):
+    id: int
+    data: str
+    message: Message
+
+
+class Update(BaseModel):
+    update_id: int
+    message: Message | None = None
+    callback_query: CallbackQuery | None = None
