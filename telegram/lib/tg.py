@@ -132,7 +132,7 @@ class App:
 
     def __init__(
         self,
-        bot,
+        bot: Bot,
         message_handler: Handler[Message],
         command_handlers: dict[str, Handler[Command]],
         callback_handler: Handler[CallbackQuery],
@@ -154,3 +154,6 @@ class App:
 
         elif u.callback_query:
             self.callback_handler(self.bot, u.callback_query)
+
+    def get_updates(self, **kwargs):
+        return self.bot.get_updates(**kwargs)

@@ -17,9 +17,7 @@ if __name__ == "__main__":
     print("Running...")
     while True:
         updates = (
-            app.bot.get_updates(params={"offset": max_update + 1})
-            .json()
-            .get("result", [])
+            app.get_updates(params={"offset": max_update + 1}).json().get("result", [])
         )
 
         for update in updates:
