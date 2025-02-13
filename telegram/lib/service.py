@@ -13,59 +13,73 @@ class Kind(StrEnum):
     collection = auto()
 
 
+def convert_song_opus(song: dict) -> dict:
+    """Converts the API's opus data to IO[bytes]"""
+    return {
+        **song,
+        "opus": BytesIO(base64.b64decode(song["opus"])),
+    }
+
+
 # graph api wrapper implementation
-def query(q: str):
-    return httpx.post(APIURL, json={"query": q}).json()
+def query(q: str, vars: dict | None = None) -> dict:
+
+    return httpx.post(APIURL, json={"query": q, "variables": vars}).json()
 
 
-def search(kind: Kind, search_string: str):
-    q = f"""
-    {{
-        search (kind: {kind}, string: "{search_string}") {{
-            id, name
-        }}
-    }}"""
-    result = query(q)
+def search(kind: Kind, search_string: str) -> dict:
+    q = """
+    query search($kind: Kind!, $string: String!){
+        search(kind: $kind string: $string) {
+            id
+            name
+         }
+    }
+    """
+
+    result = query(q, {"kind": kind, "string": search_string})
 
     return result["data"]["search"]
 
 
-def get_song(song_id: int):
-    q = f"""{{song (id: {song_id}) {{ id, name, tones, opus }} }}"""
-    result = query(q)
+def get_song(song_id: int) -> dict:
+    q = """
+    query getSong($id: Int!) {
+        song (id: $id){
+            id
+            name
+            tones
+            opus
+        }
+    }
+    """
+    result = query(q, {"id": song_id})
     song = result["data"]["song"]
 
-    # convert opus to bytestream
-    opus = BytesIO(base64.b64decode(song["opus"]))
-    song["opus"] = opus
-    return song
+    return convert_song_opus(song)
 
 
-def get_songlist(group_pk: str):
+def get_songlist(group_pk: str) -> list[dict]:
     """Splitting the pk here is a bit smelly"""
     kind, num = group_pk.split(":")
 
-    q = f"""
-    {{
-        {kind} (id: {num}) {{
-            songs {{
-                id, name
-            }}
-        }}
-    }}
-    """
+    # string manipulation a bit hacky but I guess it's better than double braces
+    q = """
+    query listSongs($id: Int!) {
+        %(kind)s (id: $id) { songs { id name } }
+    }
+    """ % {
+        "kind": kind
+    }
 
-    result = query(q)
+    result = query(q, {"id": int(num)})
 
     return result["data"][kind]["songs"]
 
 
-def get_random_song():
+def get_random_song() -> dict:
     q = "{randomSong {id, name, tones, opus}}"
     result = query(q)
     song = result["data"]["randomSong"]
 
-    # convert opus to bytestream
-    opus = BytesIO(base64.b64decode(song["opus"]))
-    song["opus"] = opus
-    return song
+    return convert_song_opus(song)
