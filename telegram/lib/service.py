@@ -54,7 +54,7 @@ def get_song(song_id: int) -> dict:
     return song
 
 
-def get_songlist(group_pk: str):
+def get_songlist(group_pk: str) -> list[dict]:
     """Splitting the pk here is a bit smelly"""
     kind, num = group_pk.split(":")
 
@@ -72,7 +72,7 @@ def get_songlist(group_pk: str):
     return result["data"][kind]["songs"]
 
 
-def get_random_song():
+def get_random_song() -> dict:
     q = "{randomSong {id, name, tones, opus}}"
     result = query(q)
     song = result["data"]["randomSong"]
