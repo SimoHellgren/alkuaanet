@@ -63,7 +63,7 @@ def get_songlist(group_pk: str) -> list[dict]:
     """Splitting the pk here is a bit smelly"""
     kind, num = group_pk.split(":")
 
-    # string manipulation a bit hacky but I guess it's better than double braces
+    # string formatting a bit oldschool but more readable than double braces
     q = """
     query listSongs($id: Int!) {
         %(kind)s (id: $id) { songs { id name } }
