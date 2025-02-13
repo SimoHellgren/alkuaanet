@@ -13,6 +13,14 @@ class Kind(StrEnum):
     collection = auto()
 
 
+def convert_song_opus(song: dict) -> dict:
+    """Converts the API's opus data to IO[bytes]"""
+    return {
+        **song,
+        "opus": BytesIO(base64.b64decode(song["opus"])),
+    }
+
+
 # graph api wrapper implementation
 def query(q: str, vars: dict | None = None) -> dict:
 
@@ -48,10 +56,7 @@ def get_song(song_id: int) -> dict:
     result = query(q, {"id": song_id})
     song = result["data"]["song"]
 
-    # convert opus to bytestream
-    opus = BytesIO(base64.b64decode(song["opus"]))
-    song["opus"] = opus
-    return song
+    return convert_song_opus(song)
 
 
 def get_songlist(group_pk: str) -> list[dict]:
@@ -77,7 +82,4 @@ def get_random_song() -> dict:
     result = query(q)
     song = result["data"]["randomSong"]
 
-    # convert opus to bytestream
-    opus = BytesIO(base64.b64decode(song["opus"]))
-    song["opus"] = opus
-    return song
+    return convert_song_opus(song)
