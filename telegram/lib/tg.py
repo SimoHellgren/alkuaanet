@@ -1,8 +1,8 @@
+import json
 from enum import StrEnum, auto
 from functools import partialmethod
-from typing import Callable
-import json
-from typing import BinaryIO
+from typing import Any, BinaryIO, Callable, Self
+
 import httpx
 from pydantic import BaseModel
 
@@ -16,10 +16,12 @@ class ParseMode(StrEnum):
 
 
 class Bot:
-    def __init__(self, token):
+    def __init__(self, token: str) -> Self:
         self.token = token
 
-    def request(self, method: str, endpoint: str, **kwargs):
+    def request(
+        self, method: str, endpoint: str, **kwargs: dict[str, Any]
+    ) -> httpx.Response:
         base = f"https://api.telegram.org/bot{self.token}/"
         return httpx.request(method, base + endpoint, **kwargs)
 
@@ -45,7 +47,7 @@ class Bot:
             },
         )
 
-    def send_voice(self, chat_id: int, voice: BinaryIO, caption: str = ""):
+    def send_voice(self, chat_id: int, voice: BinaryIO, caption: str = "") -> None:
         return self.post(
             "sendVoice",
             params={
@@ -61,7 +63,7 @@ class Bot:
             },
         )
 
-    def answer_callback_query(self, chat_id: int, callback_query_id: int):
+    def answer_callback_query(self, chat_id: int, callback_query_id: int) -> None:
         return self.post(
             "answerCallbackQuery",
             params={"chat_id": chat_id, "callback_query_id": callback_query_id},
@@ -70,7 +72,7 @@ class Bot:
 
 def make_keyboard(kind: str, data: list[dict]) -> dict:
     keys = [
-        [{"text": datum["name"], "callback_data": f"{kind}:{datum["id"]}"}]
+        [{"text": datum["name"], "callback_data": f"{kind}:{datum['id']}"}]
         for datum in data
     ]
     return {"inline_keyboard": keys}
@@ -90,7 +92,7 @@ class Command(BaseModel):
     chat: Chat
 
     @classmethod
-    def from_message(cls, message: "Message"):
+    def from_message(cls, message: "Message") -> Self:
         command, _, args = message.text.partition(" ")
         return cls(name=command, args=args.split(), chat=message.chat)
 
@@ -136,24 +138,28 @@ class App:
         message_handler: Handler[Message],
         command_handlers: dict[str, Handler[Command]],
         callback_handler: Handler[CallbackQuery],
-    ):
+    ) -> Self:
         self.bot = bot
         self.message_handler = message_handler
         self.command_handlers = command_handlers
         self.callback_handler = callback_handler
 
-    def process_update(self, update: dict):
+    def process_update(self, update: dict) -> None:
         u = Update(**update)
 
         if u.message:
             if u.message.is_command:
-                command = self.command_handlers[u.message.command.name]
-                command(self.bot, u.message.command)
+                command = self.command_handlers.get(u.message.command.name)
+                if command:
+                    command(self.bot, u.message.command)
+                else:
+                    # if command not found, default to message_handler
+                    self.message_handler(self.bot, u.message)
             else:
                 self.message_handler(self.bot, u.message)
 
         elif u.callback_query:
             self.callback_handler(self.bot, u.callback_query)
 
-    def get_updates(self, **kwargs):
+    def get_updates(self, **kwargs: dict[str, Any]) -> list[dict]:
         return self.bot.get_updates(**kwargs)
