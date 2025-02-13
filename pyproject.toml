@@ -10,6 +10,19 @@ description = ""
 readme = "README.md"
 dependencies = []
 
+[project.optional-dependencies]
+telegram = [
+    "httpx>=0.28.1",
+    "pydantic>=2.10.6",
+]
+
+graph = [
+    "cryptography>=44.0.0",
+    "mangum<1.0,>=0.19",
+    "pydantic<3.0.0,>=2.10.4",
+    "strawberry-graphql[asgi]>=0.258.0",
+]
+
 [dependency-groups]
 dev = [
     "pytest<8.0.0,>=7.4.0",
@@ -21,14 +34,4 @@ dev = [
     "click<9.0.0,>=8.1.8",
     "mypy>=1.15.0",
     "requests>=2.32.3",
-]
-telegram = [
-    "requests<3,>=2",
-    "python-telegram-bot>=21.10",
-]
-graph = [
-    "cryptography>=44.0.0",
-    "mangum<1.0,>=0.19",
-    "pydantic<3.0.0,>=2.10.4",
-    "strawberry-graphql[asgi]>=0.258.0",
 ]

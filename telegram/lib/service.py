@@ -1,6 +1,6 @@
 from io import BytesIO
 import base64
-import requests
+import httpx
 from enum import StrEnum, auto
 import os
 
@@ -15,7 +15,7 @@ class Kind(StrEnum):
 
 # graph api wrapper implementation
 def query(q: str):
-    return requests.post(APIURL, json={"query": q}).json()
+    return httpx.post(APIURL, json={"query": q}).json()
 
 
 def search(kind: Kind, search_string: str):

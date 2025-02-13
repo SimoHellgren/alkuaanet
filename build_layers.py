@@ -51,9 +51,10 @@ if __name__ == "__main__":
             [
                 "uv",
                 "export",
-                "--only-group",
-                group,
                 "--no-hashes",
+                "--no-dev",
+                "--extra",
+                group,
                 "-o",
                 DEPS_FOLDER / "requirements.txt",
             ]

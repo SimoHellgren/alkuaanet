@@ -1,11 +1,30 @@
-from lib.bot import get_app
-from dotenv import load_dotenv
 import os
+from dotenv import load_dotenv
+from app import build_app
 
-load_dotenv()
-TOKEN = os.environ["DEV_BOT_TOKEN"]
+if __name__ == "__main__":
+    import os
+    from time import sleep
+    from dotenv import load_dotenv
 
-app = get_app(TOKEN)
+    load_dotenv(override=True)
 
-print("Running in dev mode!")
-app.run_polling()
+    TOKEN = os.environ.get("DEV_BOT_TOKEN")
+
+    app = build_app(TOKEN)
+
+    max_update = -1
+    print("Running...")
+    while True:
+        updates = (
+            app.get_updates(params={"offset": max_update + 1}).json().get("result", [])
+        )
+
+        for update in updates:
+            print("processing", update)
+            app.process_update(update)
+
+        if updates:
+            max_update = max(u["update_id"] for u in updates)
+
+        sleep(1)
