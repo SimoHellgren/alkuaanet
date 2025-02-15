@@ -47,12 +47,19 @@ class Bot:
             },
         )
 
-    def send_voice(self, chat_id: int, voice: BinaryIO, caption: str = "") -> None:
+    def send_voice(
+        self,
+        chat_id: int,
+        voice: BinaryIO,
+        caption: str = "",
+        parse_mode: ParseMode | None = None,
+    ) -> None:
         return self.post(
             "sendVoice",
             params={
                 "chat_id": chat_id,
                 "caption": caption,
+                "parse_mode": parse_mode,
             },
             files={
                 "voice": (

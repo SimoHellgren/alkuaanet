@@ -1,5 +1,5 @@
 from lib import service as api
-from lib.tg import App, Bot, Message, CallbackQuery, Command, make_keyboard
+from lib.tg import App, Bot, Message, CallbackQuery, Command, make_keyboard, ParseMode
 
 
 def handle_message(bot: Bot, message: Message) -> None:
@@ -26,13 +26,26 @@ def start(bot: Bot, command: Command) -> None:
     bot.send_message(command.chat.id, msg, parse_mode=None)
 
 
-def send_song(bot: Bot, chat_id: int, song: dict) -> None:
-    bot.send_voice(chat_id, song["opus"], f"{song["name"]}: {song["tones"]}")
+def send_song(
+    bot: Bot, chat_id: int, song: dict, parse_mode: ParseMode | None = None
+) -> None:
+    bot.send_voice(
+        chat_id, song["opus"], f"{song["name"]}: {song["tones"]}", parse_mode=parse_mode
+    )
 
 
 def handle_random(bot: Bot, command: Command) -> None:
     song = api.get_random_song()
     send_song(bot, command.chat.id, song)
+
+
+def handle_guess(bot: Bot, command: Command) -> None:
+    song = api.get_random_song()
+    # add spoiler to song name
+    song["name"] = f"||{song["name"]}||"
+    # escape dashes
+    song["tones"] = song["tones"].replace("-", "\-")
+    send_song(bot, command.chat.id, song, parse_mode=ParseMode.MarkdownV2)
 
 
 def handle_search(bot: Bot, command: Command) -> None:
@@ -76,6 +89,7 @@ def build_app(token: str):
             "/random": handle_random,
             "/collections": handle_search,
             "/composers": handle_search,
+            "/guess": handle_guess,
         },
         handle_callback,
     )
