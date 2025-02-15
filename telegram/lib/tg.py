@@ -17,7 +17,7 @@ class ParseMode(StrEnum):
 
 
 class Bot:
-    def __init__(self, token: str) -> Self:
+    def __init__(self, token: str) -> None:
         self.token = token
 
     def request(
@@ -149,7 +149,7 @@ class App:
         message_handler: Handler[Message],
         command_handlers: dict[str, Handler[Command]],
         callback_handler: Handler[CallbackQuery],
-    ) -> Self:
+    ) -> None:
         self.bot = bot
         self.message_handler = message_handler
         self.command_handlers = command_handlers
@@ -159,10 +159,10 @@ class App:
         u = Update(**update)
 
         if u.message:
-            if u.message.is_command:
-                command = self.command_handlers.get(u.message.command.name)
-                if command:
-                    command(self.bot, u.message.command)
+            if command := u.message.command:
+                command_handler = self.command_handlers.get(command.name)
+                if command_handler:
+                    command_handler(self.bot, u.message.command)
                 else:
                     # if command not found, default to message_handler
                     self.message_handler(self.bot, u.message)
@@ -172,5 +172,5 @@ class App:
         elif u.callback_query:
             self.callback_handler(self.bot, u.callback_query)
 
-    def get_updates(self, **kwargs: dict[str, Any]) -> list[dict]:
+    def get_updates(self, **kwargs: dict[str, Any]) -> httpx.Response:
         return self.bot.get_updates(**kwargs)

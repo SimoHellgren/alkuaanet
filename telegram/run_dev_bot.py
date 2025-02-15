@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 if __name__ == "__main__":
     load_dotenv(override=True)
 
-    TOKEN = os.environ.get("DEV_BOT_TOKEN")
+    TOKEN = os.environ.get("DEV_BOT_TOKEN", "")
 
     app = build_app(TOKEN)
 

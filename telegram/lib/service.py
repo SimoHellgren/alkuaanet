@@ -27,7 +27,7 @@ def query(q: str, variables: dict | None = None) -> dict:
     return httpx.post(APIURL, json={"query": q, "variables": variables}).json()
 
 
-def search(kind: Kind, search_string: str) -> dict:
+def search(kind: Kind, search_string: str) -> list[dict]:
     q = """
     query search($kind: Kind!, $string: String!){
         search(kind: $kind string: $string) {
