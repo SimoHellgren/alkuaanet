@@ -44,7 +44,7 @@ def handle_guess(bot: Bot, command: Command) -> None:
     # add spoiler to song name
     song["name"] = f"||{song["name"]}||"
     # escape dashes
-    song["tones"] = song["tones"].replace("-", "\-")
+    song["tones"] = song["tones"].replace("-", r"\-")
     send_song(bot, command.chat.id, song, parse_mode=ParseMode.MarkdownV2)
 
 
