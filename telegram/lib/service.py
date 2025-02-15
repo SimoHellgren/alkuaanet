@@ -1,8 +1,9 @@
-from io import BytesIO
 import base64
-import httpx
-from enum import StrEnum, auto
 import os
+from enum import StrEnum, auto
+from io import BytesIO
+
+import httpx
 
 APIURL = os.environ["API_URL"]
 
@@ -22,9 +23,8 @@ def convert_song_opus(song: dict) -> dict:
 
 
 # graph api wrapper implementation
-def query(q: str, vars: dict | None = None) -> dict:
-
-    return httpx.post(APIURL, json={"query": q, "variables": vars}).json()
+def query(q: str, variables: dict | None = None) -> dict:
+    return httpx.post(APIURL, json={"query": q, "variables": variables}).json()
 
 
 def search(kind: Kind, search_string: str) -> dict:
@@ -63,14 +63,13 @@ def get_songlist(group_pk: str) -> list[dict]:
     """Splitting the pk here is a bit smelly"""
     kind, num = group_pk.split(":")
 
-    # string formatting a bit oldschool but more readable than double braces
+    # Ignoring linter error due to rather avoiding double braces
+    # than using f-strings or str.format
     q = """
     query listSongs($id: Int!) {
         %(kind)s (id: $id) { songs { id name } }
     }
-    """ % {
-        "kind": kind
-    }
+    """ % {"kind": kind}  # noqa: UP031
 
     result = query(q, {"id": int(num)})
 

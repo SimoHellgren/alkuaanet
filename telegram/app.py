@@ -1,12 +1,14 @@
 from lib import service as api
-from lib.tg import App, Bot, Message, CallbackQuery, Command, make_keyboard, ParseMode
+from lib.tg import App, Bot, CallbackQuery, Command, Message, ParseMode, make_keyboard
 
 
 def handle_message(bot: Bot, message: Message) -> None:
     songs = api.search("song", message.text)
     keyboard = make_keyboard("song", songs)
     bot.send_message(
-        message.chat.id, f"Results for _song {message.text}_", reply_markup=keyboard
+        message.chat.id,
+        f"Results for _song {message.text}_",
+        reply_markup=keyboard,
     )
 
 
@@ -28,13 +30,18 @@ def start(bot: Bot, command: Command) -> None:
 
 
 def send_song(
-    bot: Bot, chat_id: int, song: dict, parse_mode: ParseMode | None = None
+    bot: Bot,
+    chat_id: int,
+    song: dict,
+    parse_mode: ParseMode | None = None,
 ) -> None:
     bot.send_voice(
-        chat_id, song["opus"], f"{song["name"]}: {song["tones"]}", parse_mode=parse_mode
+        chat_id,
+        song["opus"],
+        f"{song['name']}: {song['tones']}",
+        parse_mode=parse_mode,
     )
-
-    if song["id"] == 236:
+    if song["id"] == 236:  # noqa: PLR2004
         bot.send_message(chat_id, "Missä on _näin_ hyvät bileet?")
 
 
@@ -46,7 +53,7 @@ def handle_random(bot: Bot, command: Command) -> None:
 def handle_guess(bot: Bot, command: Command) -> None:
     song = api.get_random_song()
     # add spoiler to song name
-    song["name"] = f"||{song["name"]}||"
+    song["name"] = f"||{song['name']}||"
     # escape dashes
     song["tones"] = song["tones"].replace("-", r"\-")
     send_song(bot, command.chat.id, song, parse_mode=ParseMode.MarkdownV2)
@@ -67,13 +74,13 @@ def handle_search(bot: Bot, command: Command) -> None:
 
 
 def handle_callback(bot: Bot, callback_query: CallbackQuery) -> None:
-    kind, id = callback_query.data.split(":")
+    kind, record_id = callback_query.data.split(":")
 
     chat_id = callback_query.message.chat.id
 
     match kind:
         case "song":
-            song = api.get_song(int(id))
+            song = api.get_song(int(record_id))
             send_song(bot, chat_id, song)
             bot.answer_callback_query(chat_id, callback_query.id)
 
@@ -84,7 +91,7 @@ def handle_callback(bot: Bot, callback_query: CallbackQuery) -> None:
             bot.answer_callback_query(chat_id, callback_query.id)
 
 
-def build_app(token: str):
+def build_app(token: str) -> App:
     return App(
         Bot(token),
         handle_message,

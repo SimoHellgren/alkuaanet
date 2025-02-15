@@ -1,7 +1,8 @@
 import json
+from collections.abc import Callable
 from enum import StrEnum, auto
 from functools import partialmethod
-from typing import Any, BinaryIO, Callable, Self
+from typing import Any, BinaryIO, Self
 
 import httpx
 from pydantic import BaseModel
@@ -20,7 +21,10 @@ class Bot:
         self.token = token
 
     def request(
-        self, method: str, endpoint: str, **kwargs: dict[str, Any]
+        self,
+        method: str,
+        endpoint: str,
+        **kwargs: dict[str, Any],
     ) -> httpx.Response:
         base = f"https://api.telegram.org/bot{self.token}/"
         return httpx.request(method, base + endpoint, **kwargs)
@@ -66,7 +70,7 @@ class Bot:
                     "applicaton.octet-stream",
                     voice.read(),
                     "application/octet-stream",
-                )
+                ),
             },
         )
 
