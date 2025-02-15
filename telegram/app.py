@@ -34,6 +34,9 @@ def send_song(
         chat_id, song["opus"], f"{song["name"]}: {song["tones"]}", parse_mode=parse_mode
     )
 
+    if song["id"] == 236:
+        bot.send_message(chat_id, "Missä on _näin_ hyvät bileet?")
+
 
 def handle_random(bot: Bot, command: Command) -> None:
     song = api.get_random_song()
