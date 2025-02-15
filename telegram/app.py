@@ -19,7 +19,8 @@ def start(bot: Bot, command: Command) -> None:
         "/collections p\n"
         "/composers\n"
         "/composers kuu\n"
-        "/random"
+        "/random\n"
+        "/guess"
     )
 
     # parse_mode = None due to not wanting to escape exclamation marks
