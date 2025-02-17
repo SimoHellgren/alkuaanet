@@ -12,6 +12,7 @@ graph = [
     { name = "mangum" },
     { name = "pydantic" },
     { name = "strawberry-graphql", extra = ["asgi"] },
+    { name = "types-boto3", extra = ["dynamodb"] },
 ]
 telegram = [
     { name = "httpx" },
@@ -38,6 +39,7 @@ requires-dist = [
     { name = "pydantic", marker = "extra == 'graph'", specifier = ">=2.10.4,<3.0.0" },
     { name = "pydantic", marker = "extra == 'telegram'", specifier = ">=2.10.6" },
     { name = "strawberry-graphql", extras = ["asgi"], marker = "extra == 'graph'", specifier = ">=0.258.0" },
+    { name = "types-boto3", extras = ["dynamodb"], marker = "extra == 'graph'", specifier = ">=1.36.21" },
     { name = "types-boto3", extras = ["lambda", "ssm"], marker = "extra == 'telegram'", specifier = ">=1.36.21" },
 ]
 
@@ -568,11 +570,23 @@ wheels = [
 ]
 
 [package.optional-dependencies]
+dynamodb = [
+    { name = "types-boto3-dynamodb" },
+]
 lambda = [
     { name = "types-boto3-lambda" },
 ]
 ssm = [
     { name = "types-boto3-ssm" },
+]
+
+[[package]]
+name = "types-boto3-dynamodb"
+version = "1.36.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/ff/7c/ba9ec3da8936a40e2a09dce84f3b5d1613d16797de81d84a98bd561d7f91/types_boto3_dynamodb-1.36.0.tar.gz", hash = "sha256:bc47142b5285d252631274cd585c4f678c8099928575b4fd79942a0091939989", size = 46784 }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/c3/44/d1a8be9d1ba6af1c0ce1d65051241b8fa49075134093cb1bf68b3fa459a3/types_boto3_dynamodb-1.36.0-py3-none-any.whl", hash = "sha256:863d46f77315e268e30f49eb0a064b9bd75eecb2a98a2004f8f884cae14dbaee", size = 55762 },
 ]
 
 [[package]]

@@ -22,6 +22,7 @@ graph = [
     "mangum<1.0,>=0.19",
     "pydantic<3.0.0,>=2.10.4",
     "strawberry-graphql[asgi]>=0.258.0",
+    "types-boto3[dynamodb]>=1.36.21",
 ]
 
 [dependency-groups]

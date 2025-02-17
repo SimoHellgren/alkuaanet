@@ -1,15 +1,16 @@
 """Wrapper module around boto3 to simplify interaction with the db.
+
 Mostly meant to simplify calls by hiding implementation details of the
 particular DynamoDB table implementation, while still being relatively thin.
 """
 
-from decimal import Decimal
 import random as rand
+from decimal import Decimal
 from enum import StrEnum, auto
+
 import boto3
 from boto3.dynamodb.conditions import Key
 
-# TODO: consider managing table name or arn in a configuration file
 RESOURCE = boto3.resource("dynamodb")
 TABLE = RESOURCE.Table("songs_v2")
 
@@ -47,16 +48,16 @@ def batch_get(keys: list[dict]) -> list[dict]:
 
 def batch_write(items: list[dict]) -> list[dict]:
     with TABLE.batch_writer() as batch:
-        responses = [batch.put_item(Item=item) for item in items]
+        for item in items:
+            batch.put_item(Item=item)
 
     # put_item never returns any data, so we just return the items ¯\_(ツ)_/¯
     return items
 
 
 def batch_delete(keys: list[dict]) -> list[dict]:
-
     with TABLE.batch_writer() as batch:
-        responses = [batch.delete_item(Key=key) for key in keys]
+        [batch.delete_item(Key=key) for key in keys]
 
     # delete_item doesn't return data, so we just return the keys
     return keys
@@ -89,15 +90,18 @@ def search(kind: Kind, string: str) -> dict | None:
 
 def reverse_index(sk: str) -> list[dict]:
     result = TABLE.query(
-        IndexName=REVERSE_INDEX, KeyConditionExpression=Key("sk").eq(sk)
+        IndexName=REVERSE_INDEX,
+        KeyConditionExpression=Key("sk").eq(sk),
     )
 
     return result.get("Items")
 
 
 def _random(kind: Kind) -> dict | None:
-    """Try getting a random record. Doesn't necessarily return a record due to
-    the way things are implemented in the db.
+    """Try getting a random record.
+
+    Doesn't necessarily return a record due to the way things are implemented
+    in the db.
 
     For songs the probability of this happening is <1% (ca. 2025-01).
     For composers it is higher, and for collections even higher due to the
@@ -105,7 +109,7 @@ def _random(kind: Kind) -> dict | None:
     """
     result = TABLE.query(
         KeyConditionExpression=Key("pk").eq(kind)
-        & Key("random").gt(Decimal(str(rand.random()))),
+        & Key("random").gt(Decimal(str(rand.random()))),  # noqa: S311
         Limit=1,
         IndexName="random_index",
     )["Items"]
@@ -115,19 +119,15 @@ def _random(kind: Kind) -> dict | None:
 
 def random(kind: Kind) -> dict:
     """Attempts to find a random record until it does"""
-    i = 1
     while not (result := _random(kind)):
-        print("Attempt", i, "at getting random", kind, "unsuccessful.")
+        pass
 
-    item = get_item(kind, result["sk"])
-
-    return item
+    return get_item(kind, result["sk"])
 
 
 def put(item: dict) -> dict:
-    response = TABLE.put_item(Item=item)
+    TABLE.put_item(Item=item)
 
-    # TODO: might want to check for errors here
     return item
 
 
@@ -156,6 +156,4 @@ def _get_next_id(kind: Kind) -> int:
         ExpressionAttributeValues={":incr": 1},
     )
 
-    num = int(response["Attributes"]["current_value"])
-
-    return num
+    return int(response["Attributes"]["current_value"])
