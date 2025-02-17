@@ -24,15 +24,15 @@ class Bot:
         self,
         method: str,
         endpoint: str,
-        **kwargs: dict[str, Any],
+        params: dict | None = None,
     ) -> httpx.Response:
         base = f"https://api.telegram.org/bot{self.token}/"
-        return httpx.request(method, base + endpoint, **kwargs)
+        return httpx.request(method, base + endpoint, params=params)
 
     get = partialmethod(request, "GET")
     post = partialmethod(request, "POST")
 
-    get_updates = partialmethod(get, "getUpdates")
+    get_updates = partialmethod(request, "GET", "getUpdates")
 
     def send_message(
         self,
@@ -172,5 +172,5 @@ class App:
         elif u.callback_query:
             self.callback_handler(self.bot, u.callback_query)
 
-    def get_updates(self, **kwargs: dict[str, Any]) -> httpx.Response:
-        return self.bot.get_updates(**kwargs)
+    def get_updates(self, params: dict[str, Any] | None = None) -> httpx.Response:
+        return self.bot.get_updates(params=params)

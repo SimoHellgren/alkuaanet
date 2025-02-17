@@ -5,7 +5,7 @@ from lib.tg import App, Bot, CallbackQuery, Command, Message, ParseMode, make_ke
 
 
 def handle_message(bot: Bot, message: Message) -> None:
-    songs = api.search("song", message.text)
+    songs = api.search(api.Kind.song, message.text)
     keyboard = make_keyboard("song", songs)
     bot.send_message(
         message.chat.id,
@@ -70,7 +70,8 @@ def handle_guess(bot: Bot, command: Command) -> None:
 
 
 def handle_search(bot: Bot, command: Command) -> None:
-    kind = command.name[1:-1]  # ugly
+    kind = api.Kind(command.name[1:-1])  # slice a bit ugly
+
     query = " ".join(command.args)
     results = api.search(kind, query)
     keyboard = make_keyboard(kind, results)
