@@ -1,3 +1,5 @@
+import re
+
 from lib import service as api
 from lib.tg import App, Bot, CallbackQuery, Command, Message, ParseMode, make_keyboard
 
@@ -50,12 +52,20 @@ def handle_random(bot: Bot, command: Command) -> None:
     send_song(bot, command.chat.id, song)
 
 
+def escape(s: str) -> str:
+    """Escapes special characters for MarkdownV2."""
+    chars = "_*[]()~`>#+-=|{}.!"
+    re_chars = "\\".join(chars)
+    pattern = re.compile(f"([{re_chars}])")
+
+    return pattern.sub(r"\\\1", s)
+
+
 def handle_guess(bot: Bot, command: Command) -> None:
     song = api.get_random_song()
-    # add spoiler to song name
-    song["name"] = f"||{song['name']}||"
-    # escape dashes
-    song["tones"] = song["tones"].replace("-", r"\-")
+    # add spoiler to song name and escape special characters
+    song["name"] = f"||{escape(song['name'])}||"
+    song["tones"] = escape(song["tones"])
     send_song(bot, command.chat.id, song, parse_mode=ParseMode.MarkdownV2)
 
 
