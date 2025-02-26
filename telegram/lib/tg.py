@@ -25,9 +25,10 @@ class Bot:
         method: str,
         endpoint: str,
         params: dict | None = None,
+        files: dict | None = None,
     ) -> httpx.Response:
         base = f"https://api.telegram.org/bot{self.token}/"
-        return httpx.request(method, base + endpoint, params=params)
+        return httpx.request(method, base + endpoint, params=params, files=files)
 
     get = partialmethod(request, "GET")
     post = partialmethod(request, "POST")
