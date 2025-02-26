@@ -96,7 +96,7 @@ resource "aws_lambda_function" "graph_api_lambda" {
   role          = aws_iam_role.iam_for_lambda.arn
   handler       = "lib.schema.handler"
   timeout       = 5
-  memory_size   = 256
+  memory_size   = 512
 
   source_code_hash = data.archive_file.graph_api_lambda_payload.output_base64sha256
 
